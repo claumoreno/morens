@@ -3,18 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MORENS — Maison</title>
-  <meta name="description" content="MORENS: prendas atemporales, confeccionadas en pequeñas series. Descubre la colección y haz tu pedido por WhatsApp.">
-  <meta property="og:title" content="MORENS — Maison">
-  <meta property="og:description" content="Prendas atemporales, confeccionadas en pequeñas series.">
-  <meta name="theme-color" content="#0f0e0d">
+  <title>MORENS — Chic with an edge</title>
+  <meta name="description" content="MORENS: chic with an edge. Siluetas limpias, materiales con brillo y un detalle que rompe las reglas. Pide por WhatsApp.">
+  <meta property="og:title" content="MORENS — Chic with an edge">
+  <meta property="og:description" content="Siluetas limpias, materiales con brillo y un detalle que rompe las reglas.">
+  <meta name="theme-color" content="#141110">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400;1,6..96,500&family=Inter+Tight:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <div class="anuncio">Envíos a todo el país <span class="orn">✦</span> Pedidos por WhatsApp</div>
+  <div class="anuncio">Envíos a todo el país <span class="sep">/</span> Pedidos por WhatsApp</div>
 
   <header class="header">
     <div class="contenedor header__fila">
@@ -23,73 +23,90 @@
       </button>
       <nav id="nav" class="nav">
         <a href="#coleccion">Colección</a>
-        <a href="#nosotros">La Maison</a>
+        <a href="#nosotros">Nosotros</a>
         <a href="#contacto">Contacto</a>
       </nav>
       <a href="#inicio" class="logo">MORENS</a>
       <button class="bolsa-btn" aria-label="Abrir bolsa de compra">
-        Bolsa <span class="bolsa-btn__num">(<span data-num-bolsa>0</span>)</span>
+        Bolsa <span class="bolsa-btn__num">[<span data-num-bolsa>0</span>]</span>
       </button>
     </div>
   </header>
 
   <main>
     <section id="inicio" class="hero">
-      <div class="hero__marco" aria-hidden="true"></div>
+      <div class="hero__luz" aria-hidden="true"></div>
       <div class="contenedor hero__contenido">
-        <p class="eyebrow">Maison <span class="orn">·</span> Est. 2026</p>
-        <h1>El arte de vestir<br><em>con intención</em></h1>
-        <div class="ornamento" aria-hidden="true"><span></span>✦<span></span></div>
-        <p class="hero__sub">Prendas atemporales, confeccionadas en pequeñas series con materiales nobles y un cuidado absoluto por el detalle.</p>
-        <a href="#coleccion" class="btn btn--oro">Descubrir la colección</a>
+        <p class="rotulo">Colección 01 <span class="sep">/</span> Otoño–Invierno 2026</p>
+        <h1 class="lema">
+          <span class="lema__linea">Chic</span>
+          <span class="lema__linea"><small>with an</small> <em>edge.</em></span>
+        </h1>
+        <div class="hero__pie">
+          <p>Siluetas limpias, materiales con brillo y un detalle que rompe las reglas. Para quien entra a un lugar y no necesita decir nada.</p>
+          <a href="#coleccion" class="btn btn--claro">Ver colección</a>
+        </div>
       </div>
-      <a href="#coleccion" class="hero__scroll" aria-label="Ir a la colección"><span></span></a>
     </section>
 
-    <section id="coleccion" class="seccion seccion--crema">
+    <div class="cinta" aria-hidden="true">
+      <div class="cinta__pista">
+        <span>Chic with an edge</span><span>MORENS</span><span>Chic with an edge</span><span>MORENS</span>
+        <span>Chic with an edge</span><span>MORENS</span><span>Chic with an edge</span><span>MORENS</span>
+      </div>
+    </div>
+
+    <section id="coleccion" class="seccion seccion--clara">
       <div class="contenedor">
         <div class="seccion__cabecera">
-          <p class="eyebrow">Otoño — Invierno 2026</p>
-          <h2>La Colección</h2>
+          <div>
+            <p class="rotulo">Colección 01</p>
+            <h2>Lo <em>nuevo</em></h2>
+          </div>
           <div class="filtros" role="tablist" aria-label="Filtrar por categoría" data-filtros></div>
         </div>
         <div class="grid-productos" data-productos></div>
       </div>
     </section>
 
-    <section id="nosotros" class="seccion seccion--noche">
+    <section id="nosotros" class="seccion seccion--oscura">
       <div class="contenedor nosotros">
-        <p class="eyebrow">La Maison</p>
-        <p class="nosotros__cita">“No hacemos ropa para una temporada. La hacemos para quedarse contigo.”</p>
-        <div class="ornamento" aria-hidden="true"><span></span>✦<span></span></div>
-        <p class="nosotros__texto">Escribe aquí la historia de tu marca: cómo empezó, qué te inspira, dónde se confecciona cada prenda y qué la hace única. El lujo está en los detalles y en la historia que hay detrás.</p>
-        <ul class="valores">
-          <li><span class="valores__num">I</span><strong>Materiales nobles</strong><span>Algodones y lanas seleccionados por su caída y durabilidad.</span></li>
-          <li><span class="valores__num">II</span><strong>Series limitadas</strong><span>Producimos poco y con calma. Cada pieza es casi única.</span></li>
-          <li><span class="valores__num">III</span><strong>Hecho a mano</strong><span>Talleres artesanales, oficio local y pago justo.</span></li>
-        </ul>
+        <div>
+          <p class="rotulo">Nosotros</p>
+          <p class="nosotros__cita">Elegante, <em>sí.</em><br>Predecible, <em>nunca.</em></p>
+        </div>
+        <div class="nosotros__cuerpo">
+          <p>Escribe aquí la historia de tu marca: cómo empezó, qué te inspira y qué la hace diferente. MORENS es para quien combina la piel con el encaje, el denim con la cadena dorada, una copa de vino con una tarde sin prisa.</p>
+          <ol class="valores">
+            <li><span>01</span><strong>Materiales con presencia</strong><em>Piel, satín y denim que se sienten antes de verse.</em></li>
+            <li><span>02</span><strong>Series cortas</strong><em>Pocas piezas, para que nadie llegue vestida igual.</em></li>
+            <li><span>03</span><strong>El detalle que incomoda</strong><em>Una cadena, un corte, un brillo fuera de lugar. A propósito.</em></li>
+          </ol>
+        </div>
       </div>
     </section>
 
-    <section id="contacto" class="seccion seccion--crema">
+    <section id="contacto" class="seccion seccion--olivo">
       <div class="contenedor contacto">
-        <p class="eyebrow">Atención personalizada</p>
-        <h2>Estamos para servirle</h2>
-        <p>Pedidos especiales, tallas o asesoría de estilo. Escríbanos y le responderemos personalmente.</p>
+        <p class="rotulo">Contacto</p>
+        <h2>Escríbenos. <em>Sin rodeos.</em></h2>
+        <p class="contacto__texto">Pedidos, tallas o un consejo de estilo. Te contestamos nosotras, no un robot.</p>
         <div class="contacto__links">
-          <a class="btn btn--oscuro" data-link-whatsapp target="_blank" rel="noopener">WhatsApp</a>
-          <a class="btn btn--linea" data-link-instagram target="_blank" rel="noopener">Instagram</a>
-          <a class="btn btn--linea" data-link-correo>Correo</a>
+          <a class="btn btn--claro" data-link-whatsapp target="_blank" rel="noopener">WhatsApp</a>
+          <a class="btn btn--linea-clara" data-link-instagram target="_blank" rel="noopener">Instagram</a>
+          <a class="btn btn--linea-clara" data-link-correo>Correo</a>
         </div>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <div class="contenedor footer__contenido">
-      <span class="logo">MORENS</span>
-      <div class="ornamento" aria-hidden="true"><span></span>✦<span></span></div>
-      <span>© <span data-anio></span> MORENS Maison. Todos los derechos reservados.</span>
+    <div class="contenedor">
+      <p class="footer__marca">MORENS</p>
+      <div class="footer__fila">
+        <span><em>Chic with an edge.</em></span>
+        <span>© <span data-anio></span> MORENS</span>
+      </div>
     </div>
   </footer>
 
@@ -97,14 +114,14 @@
   <div class="overlay" data-overlay hidden></div>
   <aside class="bolsa" aria-label="Bolsa de compra" aria-hidden="true">
     <div class="bolsa__cabecera">
-      <h3>Su bolsa</h3>
+      <h3>Tu bolsa</h3>
       <button class="icon-btn cerrar-btn" data-cerrar-bolsa aria-label="Cerrar bolsa">×</button>
     </div>
     <div class="bolsa__items" data-bolsa-items></div>
     <div class="bolsa__pie">
       <div class="bolsa__total"><span>Total</span><strong data-bolsa-total>$0</strong></div>
       <button class="btn btn--oscuro btn--ancho" data-enviar-pedido>Enviar pedido por WhatsApp</button>
-      <p class="bolsa__nota">Le confirmaremos disponibilidad, envío y forma de pago por WhatsApp.</p>
+      <p class="bolsa__nota">Te confirmamos disponibilidad, envío y forma de pago por WhatsApp.</p>
     </div>
   </aside>
 

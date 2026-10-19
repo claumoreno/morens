@@ -35,7 +35,7 @@
     else bolsa.push({ id, talla, cantidad: 1 });
     guardarBolsa();
     pintarBolsa();
-    avisar(`${buscarProducto(id).nombre} · Talla ${talla} — añadido a su bolsa`);
+    avisar(`${buscarProducto(id).nombre} (talla ${talla}) agregado a tu bolsa`);
   }
 
   function cambiarCantidad(indice, delta) {
@@ -50,7 +50,7 @@
     if (p.imagen) {
       return `<img src="${p.imagen}" alt="${p.nombre} color ${p.color}" loading="lazy">`;
     }
-    return `<div class="placeholder" style="--tono:${p.tono}"><em>M</em><span>${p.categoria}</span></div>`;
+    return `<div class="placeholder" style="--tono:${p.tono}"><span>${p.categoria}</span></div>`;
   }
 
   // ---------- Catálogo ----------
@@ -70,25 +70,24 @@
     const lista = PRODUCTOS.filter((p) => filtro === "Todo" || p.categoria === filtro);
     $("[data-productos]").innerHTML = lista
       .map(
-        (p) => `
+        (p, i) => `
         <article class="producto" data-id="${p.id}">
           <div class="producto__img">
-            ${p.nuevo ? '<span class="etiqueta">Novedad</span>' : ""}
+            ${p.nuevo ? '<span class="etiqueta">Nuevo</span>' : ""}
             ${visual(p)}
           </div>
           <div class="producto__info">
-            <div>
-              <h3>${p.nombre}</h3>
-              <p class="producto__color">${p.color}</p>
-            </div>
+            <span class="producto__num">${String(i + 1).padStart(2, "0")}</span>
+            <h3>${p.nombre}</h3>
             <p class="producto__precio">${precio(p.precio)}</p>
+            <p class="producto__color">${p.color}</p>
           </div>
           <div class="producto__compra">
             <label class="sr-only" for="talla-${p.id}">Talla</label>
             <select id="talla-${p.id}" data-talla>
               ${p.tallas.map((t) => `<option value="${t}">${t}</option>`).join("")}
             </select>
-            <button class="btn btn--oscuro btn--chico" data-agregar>Añadir</button>
+            <button class="btn btn--oscuro btn--chico" data-agregar>Agregar</button>
           </div>
         </article>`
       )
@@ -156,7 +155,7 @@
             </div>`;
           })
           .join("")
-      : '<p class="bolsa__vacia">Su bolsa está vacía.</p>';
+      : '<p class="bolsa__vacia">Tu bolsa está vacía.</p>';
   }
 
   $("[data-bolsa-items]").addEventListener("click", (e) => {
