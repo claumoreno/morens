@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MORENS — Ropa</title>
+  <meta name="description" content="MORENS: ropa con estilo propio. Descubre la colección y haz tu pedido por WhatsApp.">
+  <meta property="og:title" content="MORENS — Ropa">
+  <meta property="og:description" content="Descubre la colección y haz tu pedido por WhatsApp.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="anuncio">Envíos a todo el país · Pedidos por WhatsApp</div>
+
+  <header class="header">
+    <div class="contenedor header__fila">
+      <button class="icon-btn menu-btn" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav">
+        <span></span><span></span>
+      </button>
+      <a href="#inicio" class="logo">MORENS</a>
+      <nav id="nav" class="nav">
+        <a href="#coleccion">Colección</a>
+        <a href="#nosotros">Nosotros</a>
+        <a href="#contacto">Contacto</a>
+      </nav>
+      <button class="bolsa-btn" aria-label="Abrir bolsa de compra">
+        Bolsa <span class="bolsa-btn__num" data-num-bolsa>0</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section id="inicio" class="hero">
+      <div class="contenedor hero__grid">
+        <div class="hero__texto">
+          <p class="eyebrow">Nueva colección · Otoño 2026</p>
+          <h1>Ropa hecha para <em>quedarse</em>.</h1>
+          <p class="hero__sub">Básicos de buena tela, cortes cómodos y colores que combinan con todo. Diseñado y hecho en pequeños lotes.</p>
+          <div class="hero__acciones">
+            <a href="#coleccion" class="btn btn--oscuro">Ver colección</a>
+            <a href="#nosotros" class="btn btn--linea">Conócenos</a>
+          </div>
+        </div>
+        <div class="hero__visual" aria-hidden="true">
+          <div class="hero__bloque hero__bloque--a"><span>MORENS</span></div>
+          <div class="hero__bloque hero__bloque--b"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="coleccion" class="seccion">
+      <div class="contenedor">
+        <div class="seccion__cabecera">
+          <h2>Colección</h2>
+          <div class="filtros" role="tablist" aria-label="Filtrar por categoría" data-filtros></div>
+        </div>
+        <div class="grid-productos" data-productos></div>
+      </div>
+    </section>
+
+    <section id="nosotros" class="seccion seccion--alt">
+      <div class="contenedor nosotros">
+        <h2>Nosotros</h2>
+        <div class="nosotros__texto">
+          <p class="destacado">MORENS nació de una idea sencilla: hacer ropa que te pongas todos los días y que dure años.</p>
+          <p>Escribe aquí la historia de tu marca: cómo empezó, qué te inspira, dónde se fabrica tu ropa y qué la hace diferente. A la gente le gusta comprarle a personas, no a logotipos.</p>
+          <ul class="valores">
+            <li><strong>Telas de calidad</strong><span>Algodón pesado que no se deforma.</span></li>
+            <li><strong>Lotes pequeños</strong><span>Producimos poco para no desperdiciar.</span></li>
+            <li><strong>Hecho local</strong><span>Talleres cercanos, pago justo.</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="contacto" class="seccion">
+      <div class="contenedor contacto">
+        <h2>¿Dudas o pedidos especiales?</h2>
+        <p>Escríbenos y te respondemos lo antes posible.</p>
+        <div class="contacto__links">
+          <a class="btn btn--oscuro" data-link-whatsapp target="_blank" rel="noopener">WhatsApp</a>
+          <a class="btn btn--linea" data-link-instagram target="_blank" rel="noopener">Instagram</a>
+          <a class="btn btn--linea" data-link-correo>Correo</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="contenedor footer__fila">
+      <span class="logo logo--chico">MORENS</span>
+      <span>© <span data-anio></span> MORENS. Todos los derechos reservados.</span>
+    </div>
+  </footer>
+
+  <!-- Bolsa de compra -->
+  <div class="overlay" data-overlay hidden></div>
+  <aside class="bolsa" aria-label="Bolsa de compra" aria-hidden="true">
+    <div class="bolsa__cabecera">
+      <h3>Tu bolsa</h3>
+      <button class="icon-btn cerrar-btn" data-cerrar-bolsa aria-label="Cerrar bolsa">×</button>
+    </div>
+    <div class="bolsa__items" data-bolsa-items></div>
+    <div class="bolsa__pie">
+      <div class="bolsa__total"><span>Total</span><strong data-bolsa-total>$0</strong></div>
+      <button class="btn btn--oscuro btn--ancho" data-enviar-pedido>Enviar pedido por WhatsApp</button>
+      <p class="bolsa__nota">Te confirmamos disponibilidad, envío y forma de pago por WhatsApp.</p>
+    </div>
+  </aside>
+
+  <div class="aviso" role="status" aria-live="polite" data-aviso></div>
+
+  <script src="js/productos.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
