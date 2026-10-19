@@ -33,7 +33,7 @@ const PRODUCTOS = [
     color: "Negro",
     tallas: ["S", "M", "L", "XL"],
     imagen: "",
-    tono: "#2b2724",
+    tono: "#1c1a19",
     nuevo: true,
   },
   {
@@ -44,17 +44,17 @@ const PRODUCTOS = [
     color: "Hueso",
     tallas: ["S", "M", "L", "XL"],
     imagen: "",
-    tono: "#d9cfc1",
+    tono: "#cbbfae",
   },
   {
     id: "sudadera-logo-arcilla",
     nombre: "Sudadera Logo",
     categoria: "Sudaderas",
     precio: 890,
-    color: "Arcilla",
+    color: "Burdeos",
     tallas: ["S", "M", "L", "XL"],
     imagen: "",
-    tono: "#b5674a",
+    tono: "#6e2a2a",
     nuevo: true,
   },
   {
@@ -65,7 +65,7 @@ const PRODUCTOS = [
     color: "Olivo",
     tallas: ["M", "L", "XL"],
     imagen: "",
-    tono: "#6b6b4a",
+    tono: "#3f4436",
   },
   {
     id: "pantalon-cargo-arena",
@@ -75,7 +75,7 @@ const PRODUCTOS = [
     color: "Arena",
     tallas: ["28", "30", "32", "34"],
     imagen: "",
-    tono: "#c4ad8a",
+    tono: "#a88a63",
   },
   {
     id: "jogger-carbon",
@@ -85,7 +85,7 @@ const PRODUCTOS = [
     color: "Carbón",
     tallas: ["S", "M", "L", "XL"],
     imagen: "",
-    tono: "#4a4744",
+    tono: "#3a3734",
   },
   {
     id: "gorra-bordada",
@@ -95,7 +95,7 @@ const PRODUCTOS = [
     color: "Negro",
     tallas: ["Única"],
     imagen: "",
-    tono: "#1f1c1a",
+    tono: "#22201e",
   },
   {
     id: "tote-bag-natural",
@@ -105,7 +105,7 @@ const PRODUCTOS = [
     color: "Natural",
     tallas: ["Única"],
     imagen: "",
-    tono: "#e6dccd",
+    tono: "#d8ccb8",
     nuevo: true,
   },
 ];

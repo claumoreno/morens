@@ -35,7 +35,7 @@
     else bolsa.push({ id, talla, cantidad: 1 });
     guardarBolsa();
     pintarBolsa();
-    avisar(`${buscarProducto(id).nombre} (${talla}) agregado a tu bolsa`);
+    avisar(`${buscarProducto(id).nombre} · Talla ${talla} — añadido a su bolsa`);
   }
 
   function cambiarCantidad(indice, delta) {
@@ -50,7 +50,7 @@
     if (p.imagen) {
       return `<img src="${p.imagen}" alt="${p.nombre} color ${p.color}" loading="lazy">`;
     }
-    return `<div class="placeholder" style="--tono:${p.tono}"><span>${p.categoria}</span></div>`;
+    return `<div class="placeholder" style="--tono:${p.tono}"><em>M</em><span>${p.categoria}</span></div>`;
   }
 
   // ---------- Catálogo ----------
@@ -73,7 +73,7 @@
         (p) => `
         <article class="producto" data-id="${p.id}">
           <div class="producto__img">
-            ${p.nuevo ? '<span class="etiqueta">Nuevo</span>' : ""}
+            ${p.nuevo ? '<span class="etiqueta">Novedad</span>' : ""}
             ${visual(p)}
           </div>
           <div class="producto__info">
@@ -88,7 +88,7 @@
             <select id="talla-${p.id}" data-talla>
               ${p.tallas.map((t) => `<option value="${t}">${t}</option>`).join("")}
             </select>
-            <button class="btn btn--oscuro btn--chico" data-agregar>Agregar</button>
+            <button class="btn btn--oscuro btn--chico" data-agregar>Añadir</button>
           </div>
         </article>`
       )
@@ -114,6 +114,7 @@
   const overlay = $("[data-overlay]");
 
   function abrirBolsa() {
+    $("[data-aviso]").classList.remove("visible");
     panel.classList.add("abierta");
     panel.setAttribute("aria-hidden", "false");
     overlay.hidden = false;
@@ -155,7 +156,7 @@
             </div>`;
           })
           .join("")
-      : '<p class="bolsa__vacia">Tu bolsa está vacía.</p>';
+      : '<p class="bolsa__vacia">Su bolsa está vacía.</p>';
   }
 
   $("[data-bolsa-items]").addEventListener("click", (e) => {
