@@ -1,0 +1,1163 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Guía de Series de Tiempo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: cuaderno de laboratorio. Barra de pestañas fija, una columna de lectura,
+   laboratorios interactivos a todo el ancho con los colores de los gráficos de la profe. */
+:root {
+  --bg: #F3F6F8;
+  --surface: #FFFFFF;
+  --sunk: #E9EEF2;
+  --fg: #13222F;
+  --muted: #566775;
+  --line: #D5DDE3;
+  --accent: #123047;      /* azul de la profe (#123047) */
+  --accent-fg: #FFFFFF;
+  --signal: #C84A4A;      /* línea roja punteada de la profe */
+  --forecast: #E67E22;    /* naranja del pronóstico final */
+  --train: #7A8790;       /* gris de entrenamiento */
+  --c-ses: #1f77b4; --c-holt: #ff7f0e; --c-wa: #2ca02c; --c-hwm: #d62728;
+  --ok: #2E7D4F; --ok-bg: #E3F2E8; --bad: #B23B3B; --bad-bg: #F8E4E4;
+  --note-bg: #EAF1F7; --warn-bg: #FBF0E2; --warn-fg: #8A4B0F;
+  --code-bg: #0F2233; --code-fg: #DCE6EE; --code-hi: #1C3A55; --code-dim: #7F93A5;
+  --f-display: "Schibsted Grotesk", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D1720; --surface: #14212C; --sunk: #1B2A37; --fg: #E3EAF0; --muted: #98A9B7; --line: #2A3A48;
+    --accent: #8DB7DF; --accent-fg: #0D1720; --signal: #E57373; --forecast: #F0A04B; --train: #8E9BA5;
+    --c-ses: #5EA8E0; --c-holt: #FFA552; --c-wa: #5CC45C; --c-hwm: #F06B6B;
+    --ok: #7BD39A; --ok-bg: #173527; --bad: #F09090; --bad-bg: #3A1D1D;
+    --note-bg: #172A3A; --warn-bg: #33250F; --warn-fg: #F2C27E;
+    --code-bg: #08121B; --code-fg: #DCE6EE; --code-hi: #1A3550; --code-dim: #7F93A5;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D1720; --surface: #14212C; --sunk: #1B2A37; --fg: #E3EAF0; --muted: #98A9B7; --line: #2A3A48;
+  --accent: #8DB7DF; --accent-fg: #0D1720; --signal: #E57373; --forecast: #F0A04B; --train: #8E9BA5;
+  --c-ses: #5EA8E0; --c-holt: #FFA552; --c-wa: #5CC45C; --c-hwm: #F06B6B;
+  --ok: #7BD39A; --ok-bg: #173527; --bad: #F09090; --bad-bg: #3A1D1D;
+  --note-bg: #172A3A; --warn-bg: #33250F; --warn-fg: #F2C27E;
+  --code-bg: #08121B; --code-fg: #DCE6EE; --code-hi: #1A3550; --code-dim: #7F93A5;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0;  background: var(--bg); color: var(--fg); font: 17px/1.6 var(--f-body); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+h1, h2, h3, h4 { font-family: var(--f-display); line-height: 1.2; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; letter-spacing: -0.02em; }
+h2 { font-size: clamp(1.5rem, 3.4vw, 2rem); font-weight: 800; letter-spacing: -0.01em; }
+h3 { font-size: 1.2rem; font-weight: 700; }
+h4 { font-size: 1rem; font-weight: 700; }
+p { margin: 0; }
+code, .mono { font-family: var(--f-mono); font-size: 0.86em; }
+p code, li code, td code { background: var(--sunk); padding: 0.05em 0.35em; border-radius: 4px; }
+a { color: var(--accent); }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--forecast); outline-offset: 2px; }
+
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.top-in { max-width: 1080px; margin: 0 auto; display: flex; align-items: center; gap: 16px; padding-block: 10px; }
+.brand { font-family: var(--f-display); font-weight: 800; font-size: 1rem; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+.brand svg { flex: none; }
+.tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; min-width: 0; flex: 1; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { border: 0; background: transparent; padding: 7px 12px; border-radius: 999px; font-weight: 600; font-size: 0.95rem; white-space: nowrap; color: var(--muted); }
+.tab:hover { background: var(--sunk); color: var(--fg); }
+.tab[aria-selected="true"] { background: var(--accent); color: var(--accent-fg); }
+
+main { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 64px; }
+.view { max-width: 1080px; margin: 0 auto; display: grid; gap: 28px; }
+.view > * { min-width: 0; }
+.lede { max-width: 68ch; color: var(--muted); font-size: 1.08rem; }
+.prose { max-width: 70ch; display: grid; gap: 12px; }
+.prose ul, .prose ol { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
+.eyebrow { font: 700 0.78rem/1 var(--f-display); letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+.head { display: grid; gap: 10px; }
+.head > * { min-width: 0; }
+.eyebrow { overflow-wrap: anywhere; }
+.sec { display: grid; gap: 14px; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; display: grid; gap: 14px; min-width: 0; }
+.panel > *, .note > *, .warn > *, .step > *, .sec > *, .grid2 > *, .grid3 > * { min-width: 0; }
+.lab { border-top: 4px solid var(--accent); }
+.lab-tag { display: inline-flex; align-items: center; gap: 6px; font: 700 0.74rem/1 var(--f-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.note { background: var(--note-bg); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 6px; }
+.warn { background: var(--warn-bg); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 6px; }
+.warn strong:first-child { color: var(--warn-fg); }
+.formula { font-family: var(--f-mono); font-size: 1rem; background: var(--sunk); border-radius: 8px; padding: 12px 14px; overflow-wrap: anywhere; }
+
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 16px; }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; }
+
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 16px; counter-reset: paso; }
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 10px; align-content: start; }
+.step-n { font: 800 2.4rem/1 var(--f-display); color: var(--accent); }
+.step button { justify-self: start; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-family: var(--f-mono); font-size: 0.78rem; background: var(--sunk); border-radius: 6px; padding: 3px 7px; }
+
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 7px 12px; font-weight: 600; font-size: 0.93rem; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg .btn[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.ctrls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: end; }
+.ctrl { display: grid; gap: 4px; min-width: 180px; flex: 1; }
+.ctrl label { font-size: 0.88rem; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.ctrl output { font-family: var(--f-mono); color: var(--fg); font-weight: 600; }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+.check { display: inline-flex; gap: 8px; align-items: center; font-size: 0.93rem; }
+
+.chart { position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { font-family: var(--f-mono); font-size: 11px; fill: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.86rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 18px; height: 3px; border-radius: 2px; display: inline-block; }
+.legend i.dash { background: none !important; border-top: 2px dashed; height: 0; }
+.tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; font: 12px/1.45 var(--f-mono); box-shadow: 0 4px 14px rgb(0 0 0 / 0.12); white-space: nowrap; z-index: 2; }
+.readout { font-family: var(--f-mono); font-size: 0.92rem; background: var(--sunk); border-radius: 8px; padding: 10px 12px; overflow-x: auto; }
+
+.tbl-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.93rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--f-display); font-size: 0.82rem; letter-spacing: 0.03em; color: var(--muted); font-weight: 700; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--f-mono); font-size: 0.86rem; white-space: nowrap; }
+tr.win td { background: var(--ok-bg); }
+tr.win td:first-child { font-weight: 700; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+.stat { background: var(--sunk); border-radius: 8px; padding: 8px 10px; display: grid; gap: 2px; }
+.stat b { font: 600 1.05rem/1.2 var(--f-mono); font-variant-numeric: tabular-nums; }
+.stat span { font-size: 0.78rem; color: var(--muted); }
+
+/* Código anotado */
+.cells { display: grid; gap: 12px; }
+details.cell { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+details.cell > summary { list-style: none; cursor: pointer; padding: 12px 16px; display: flex; gap: 10px; align-items: center; font-weight: 700; font-family: var(--f-display); }
+details.cell > summary::-webkit-details-marker { display: none; }
+details.cell > summary::before { content: "▸"; color: var(--accent); transition: transform 0.15s; }
+details.cell[open] > summary::before { transform: rotate(90deg); }
+.cell-src { font-size: 0.78rem; color: var(--muted); font-family: var(--f-body); font-weight: 400; margin-left: auto; }
+.code { background: var(--code-bg); color: var(--code-fg); font: 13px/1.6 var(--f-mono); overflow-x: auto; padding: 10px 0; }
+.ln { display: block; padding: 0 16px; white-space: pre; min-height: 1.6em; }
+.ln.has { cursor: pointer; border-left: 3px solid var(--forecast); padding-left: 13px; }
+.ln.has:hover, .ln.has.on { background: var(--code-hi); }
+.ln .cm { color: var(--code-dim); }
+.expl { white-space: normal; font: 15px/1.5 var(--f-body); background: var(--note-bg); color: var(--fg); margin: 2px 12px 6px; padding: 8px 12px; border-radius: 8px; }
+.expl code { background: var(--sunk); padding: 0.05em 0.3em; border-radius: 4px; }
+.code-hint { font-size: 0.88rem; color: var(--muted); }
+.diff { font: 13px/1.6 var(--f-mono); background: var(--code-bg); color: var(--code-fg); border-radius: 8px; padding: 10px 14px; overflow-x: auto; white-space: pre; }
+.diff .del { color: #F19A9A; }
+.diff .add { color: #8FE0A8; }
+
+/* Práctica */
+.ex { display: grid; gap: 14px; }
+.ex-h { display: flex; gap: 12px; align-items: baseline; }
+.ex-n { font: 800 1.6rem/1 var(--f-display); color: var(--signal); min-width: 1.4em; }
+blockquote { margin: 0; border-left: 3px solid var(--line); padding: 4px 0 4px 14px; color: var(--muted); font-style: italic; }
+
+/* Quiz */
+.q { display: grid; gap: 10px; }
+.q-opts { display: grid; gap: 6px; }
+.opt { text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 9px 12px; }
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt:disabled { cursor: default; }
+.opt.right { background: var(--ok-bg); border-color: var(--ok); }
+.opt.wrong { background: var(--bad-bg); border-color: var(--bad); }
+.why { font-size: 0.95rem; }
+.score { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 60px); z-index: 3; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; justify-self: start; font-weight: 700; font-variant-numeric: tabular-nums; }
+.pill { display: inline-block; font: 700 0.72rem/1 var(--f-display); letter-spacing: 0.06em; text-transform: uppercase; border-radius: 999px; padding: 4px 8px; }
+.pill.ok { background: var(--ok-bg); color: var(--ok); }
+.pill.bad { background: var(--bad-bg); color: var(--bad); }
+.foot { max-width: 1080px; margin: 0 auto; color: var(--muted); font-size: 0.88rem; border-top: 1px solid var(--line); padding-top: 16px; }
+
+@media (max-width: 640px) {
+  body { font-size: 16px; }
+  .brand span { display: none; }
+  .panel { padding: 16px; }
+  .code { font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand" aria-label="Guía de series de tiempo">
+      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect width="26" height="26" rx="6" style="fill:var(--accent)"/><polyline points="4,18 8,14 11,16 15,8 18,12 22,6" fill="none" style="stroke:var(--accent-fg)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Series de tiempo</span>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Secciones">
+      <button class="tab" role="tab" data-v="mapa">Mapa</button>
+      <button class="tab" role="tab" data-v="clase1">Clase 1 · Transformar</button>
+      <button class="tab" role="tab" data-v="clase2">Clase 2 · Descomponer</button>
+      <button class="tab" role="tab" data-v="clase3">Clase 3 · Pronosticar</button>
+      <button class="tab" role="tab" data-v="practica">Práctica</button>
+      <button class="tab" role="tab" data-v="quiz">Quiz</button>
+      <button class="tab" role="tab" data-v="chuleta">Chuleta</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+<!-- ============================ MAPA ============================ -->
+<section class="view" id="v-mapa">
+  <div class="head">
+    <p class="eyebrow">Transformación Digital · Control de Python</p>
+    <h1>Entiende cada código antes de copiarlo</h1>
+    <p class="lede">En el control vas a tener los notebooks de la profesora Beatriz Berríos. Aquí aprendes qué hace cada línea, cómo leer cada gráfico y qué cambiar cuando te den otros datos. Todo el código que aparece es el de la profe, sin cambios.</p>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-n">1</div>
+      <h3>Transformar</h3>
+      <p>Miro la serie y, si tiene un problema (asimetría, varianza que cambia, atípicos, escalas distintas), le aplico una transformación.</p>
+      <div class="chips"><span class="chip">np.log</span><span class="chip">stats.boxcox</span><span class="chip">stats.yeojohnson</span><span class="chip">winsorize</span></div>
+      <button class="btn" data-go="clase1">Ir a la Clase 1</button>
+    </div>
+    <div class="step">
+      <div class="step-n">2</div>
+      <h3>Descomponer</h3>
+      <p>Separo la serie en tendencia, estacionalidad y residuo para saber de dónde viene cada movimiento.</p>
+      <div class="chips"><span class="chip">seasonal_decompose</span><span class="chip">additive</span><span class="chip">multiplicative</span></div>
+      <button class="btn" data-go="clase2">Ir a la Clase 2</button>
+    </div>
+    <div class="step">
+      <div class="step-n">3</div>
+      <h3>Pronosticar</h3>
+      <p>Ajusto SES, Holt y Holt-Winters con datos de entrenamiento, los evalúo con datos que no vieron y elijo el de menor RMSE.</p>
+      <div class="chips"><span class="chip">SimpleExpSmoothing</span><span class="chip">Holt</span><span class="chip">ExponentialSmoothing</span></div>
+      <button class="btn" data-go="clase3">Ir a la Clase 3</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>La idea que une las tres clases</h3>
+    <div class="formula">Serie = Tendencia + Estacionalidad + Ruido</div>
+    <div class="grid3">
+      <p><strong>Clase 1:</strong> la profe fabrica la serie del supermercado justo así: 100 + 1,4·t + estacionalidad + ruido.</p>
+      <p><strong>Clase 2:</strong> <code>seasonal_decompose</code> la desarma en esas tres piezas.</p>
+      <p><strong>Clase 3:</strong> cada modelo agrega una pieza. SES = nivel. Holt = nivel + tendencia. Holt-Winters = nivel + tendencia + estacionalidad.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Los colores de los gráficos de la profe</h3>
+    <p>En la Clase 3 los gráficos siempre usan los mismos colores. Si los reconoces, lees el gráfico en segundos.</p>
+    <div class="legend" style="font-size:0.95rem">
+      <span><i style="background:var(--accent);height:4px"></i>Real / observado (#123047)</span>
+      <span><i style="background:var(--train)"></i>Entrenamiento</span>
+      <span><i class="dash" style="border-color:var(--signal)"></i>Inicio de la prueba / fin de los datos</span>
+      <span><i style="background:var(--forecast)"></i>Pronóstico final del ganador</span>
+      <span><i style="background:var(--c-ses)"></i>SES</span>
+      <span><i style="background:var(--c-holt)"></i>Holt</span>
+      <span><i style="background:var(--c-wa)"></i>Winters aditivo</span>
+      <span><i style="background:var(--c-hwm)"></i>Holt-Winters multiplicativo</span>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Cómo estudiar con esta guía</strong>
+    <p>1) Lee cada clase y juega con su laboratorio. 2) Abre el código anotado y toca las líneas marcadas en naranja para ver qué hacen. 3) Haz la práctica y el quiz. 4) Antes del control, repasa la chuleta. El notebook <code>Guia_Estudio_Series_de_Tiempo.ipynb</code> tiene lo mismo para ejecutarlo en Jupyter.</p>
+  </div>
+</section>
+
+<!-- ============================ CLASE 1 ============================ -->
+<section class="view" id="v-clase1" hidden>
+  <div class="head">
+    <p class="eyebrow">Clase 1 · transformaciones_supermercado_INE_CCS_1_1.ipynb</p>
+    <h2>Transformaciones de una serie de supermercado</h2>
+    <p class="lede">Transformar es aplicar una función a cada valor para corregir un problema estadístico. La conclusión de la profe: no es un procedimiento automático, debe responder a un problema concreto y quedar justificada.</p>
+  </div>
+
+  <div class="panel">
+    <h3>¿Cuál elegir? (tabla de la profe)</h3>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Problema observado</th><th>Transformación</th><th>Propósito</th><th>Cuidado</th></tr></thead>
+      <tbody>
+        <tr><td>Asimetría positiva</td><td><strong>Logaritmo</strong></td><td>Reducir cola derecha</td><td>Solo valores &gt; 0</td></tr>
+        <tr><td>Varianza no constante</td><td><strong>Box-Cox</strong></td><td>Estabilizar amplitud</td><td>Solo valores &gt; 0; λ se estima</td></tr>
+        <tr><td>Dispersión moderada</td><td><strong>Raíz cuadrada</strong></td><td>Comprimir valores altos</td><td>No negativos; más suave que el log</td></tr>
+        <tr><td>Ceros o negativos</td><td><strong>Yeo-Johnson</strong></td><td>Transformar sin exigir positividad</td><td>Interpretación menos directa</td></tr>
+        <tr><td>Escalas incomparables</td><td><strong>Estandarización Z</strong></td><td>Centrar y escalar</td><td>No normaliza; sensible a atípicos</td></tr>
+        <tr><td>Atípicos confirmados</td><td><strong>Winsorización</strong></td><td>Limitar su influencia</td><td>Modifica datos reales; justificar el umbral</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="panel lab">
+    <span class="lab-tag">Laboratorio · datos reales de la clase (semilla 142)</span>
+    <h3>Prueba cada transformación sobre la serie de la profe</h3>
+    <div class="seg" id="tr-seg" role="group" aria-label="Transformación"></div>
+    <div class="ctrls">
+      <div class="ctrl" id="tr-lam-wrap" hidden>
+        <label for="tr-lam"><span>λ (lambda)</span><output id="tr-lam-o"></output></label>
+        <input type="range" id="tr-lam" min="-0.5" max="1.5" step="0.0001">
+      </div>
+      <div class="ctrl" id="tr-win-wrap" hidden>
+        <label for="tr-win"><span>Porcentaje por cola (limits)</span><output id="tr-win-o"></output></label>
+        <input type="range" id="tr-win" min="0" max="0.2" step="0.01" value="0.05">
+      </div>
+    </div>
+    <div class="chart" id="tr-chart"></div>
+    <div class="stats" id="tr-stats"></div>
+    <div class="note" id="tr-note"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h3>Cómo leer λ en Box-Cox y Yeo-Johnson</h3>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th class="num">λ</th><th>Equivale a</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td>No transformar (solo corre la serie)</td></tr>
+          <tr><td class="num">0,5</td><td>Raíz cuadrada</td></tr>
+          <tr><td class="num">0</td><td>Logaritmo</td></tr>
+          <tr><td class="num">−1</td><td>Inverso</td></tr>
+        </tbody>
+      </table></div>
+      <p>La profe obtuvo λ = 0,6575 (Box-Cox) y 0,6552 (Yeo-Johnson): entre raíz y no transformar, o sea, una corrección suave.</p>
+    </div>
+    <div class="panel">
+      <h3>Lo que más preguntan</h3>
+      <ul class="prose" style="padding-left:1.2em;margin:0">
+        <li><strong>Z no normaliza.</strong> Solo centra en 0 y deja la desviación en 1; la forma es la misma.</li>
+        <li><strong>Log:</strong> una diferencia en logaritmos ≈ cambio porcentual. ln(110) − ln(100) = 0,095 ≈ 9,5%.</li>
+        <li><strong>Winsorizar</strong> reemplaza, no elimina: los datos siguen siendo 60.</li>
+        <li>Las transformaciones son <strong>monótonas</strong>: los picos y valles quedan en los mismos meses.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="warn">
+    <strong>Ojo en el control: hay λ escritos a mano</strong>
+    <p>En la celda de Yeo-Johnson con estilo (<code>lambda_yj = 0.6552</code>) y en la celda de los 7 gráficos (<code>lmbda=0.6575</code> y <code>lmbda=0.6552</code>) los λ están fijos. Si te cambian la semilla o los datos, reemplázalos por los λ nuevos que imprimen las celdas de Box-Cox y Yeo-Johnson.</p>
+  </div>
+
+  <div class="sec">
+    <h3>Código anotado de la profe</h3>
+    <p class="code-hint">Toca las líneas marcadas en naranja para ver la explicación.</p>
+    <div class="cells" data-cells="c1"></div>
+  </div>
+</section>
+
+<!-- ============================ CLASE 2 ============================ -->
+<section class="view" id="v-clase2" hidden>
+  <div class="head">
+    <p class="eyebrow">Clase 2 · Descomposicion_Clasica_Serie_Tiempo.ipynb</p>
+    <h2>Descomposición clásica</h2>
+    <p class="lede">Separa la serie en tendencia (movimiento de largo plazo), estacionalidad (patrón que se repite cada año) y residuo (lo que sobra).</p>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h3>Aditivo</h3>
+      <div class="formula">Y = T + S + R</div>
+      <p>Las oscilaciones estacionales tienen <strong>tamaño constante</strong> en unidades. La estacionalidad se lee en unidades (ej.: +25 en agosto) y sus 12 valores suman ≈ 0. El residuo gira alrededor de 0.</p>
+    </div>
+    <div class="panel">
+      <h3>Multiplicativo</h3>
+      <div class="formula">Y = T × S × R</div>
+      <p>Las oscilaciones <strong>crecen o se achican junto con el nivel</strong>. La estacionalidad es un factor (1,167 = 16,7% sobre la tendencia) y los 12 factores promedian ≈ 1. El residuo gira alrededor de 1.</p>
+    </div>
+  </div>
+
+  <div class="panel lab">
+    <span class="lab-tag">Laboratorio · los 48 meses de la clase, calculados con seasonal_decompose</span>
+    <h3>Los cuatro paneles de <code>.plot()</code></h3>
+    <div class="seg" id="dc-seg" role="group" aria-label="Modelo">
+      <button class="btn" data-m="add" aria-pressed="true">model='additive'</button>
+      <button class="btn" data-m="mul" aria-pressed="false">model='multiplicative'</button>
+    </div>
+    <div class="readout" id="dc-read">Pasa el cursor (o toca) sobre cualquier gráfico para ver la suma de componentes de ese mes.</div>
+    <div id="dc-charts" style="display:grid;gap:6px"></div>
+    <div class="note">
+      <strong>Cómo leer los paneles</strong>
+      <p><strong>Serie:</strong> los datos. <strong>Trend:</strong> sube todo el período; empieza 6 meses tarde y termina 6 meses antes porque es un promedio móvil de 12 meses. <strong>Seasonal:</strong> la misma ola se repite idéntica cada año (así trabaja el método clásico). <strong>Resid:</strong> si los puntos se ven al azar, la descomposición capturó bien la estructura.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Tabla de estacionalidad por mes (sección 9)</h3>
+    <div class="chart" id="dc-bars"></div>
+    <div class="tbl-wrap"><table id="dc-tbl"></table></div>
+    <div class="warn"><strong>Ojo</strong><p><code>.iloc[:12]</code> toma los primeros 12 meses y les pone las etiquetas Ene…Dic. Solo es correcto si la serie empieza en enero.</p></div>
+  </div>
+
+  <div class="panel">
+    <h3>¿Aditivo o multiplicativo para esta serie?</h3>
+    <p>Compara el rango de cada año (máximo − mínimo) con el nivel de ese año.</p>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Año</th><th class="num">Rango</th><th class="num">Promedio</th><th class="num">Rango / promedio</th></tr></thead>
+      <tbody>
+        <tr><td>2020</td><td class="num">40</td><td class="num">136,9</td><td class="num">29%</td></tr>
+        <tr><td>2021</td><td class="num">45</td><td class="num">148,6</td><td class="num">30%</td></tr>
+        <tr><td>2022</td><td class="num">50</td><td class="num">160,9</td><td class="num">31%</td></tr>
+        <tr><td>2023</td><td class="num">55</td><td class="num">172,2</td><td class="num">32%</td></tr>
+      </tbody>
+    </table></div>
+    <p>La amplitud crece en unidades cuando sube el nivel, pero como porcentaje se mantiene casi igual. La estacionalidad es proporcional al nivel, así que el <strong>multiplicativo</strong> es más apropiado.</p>
+  </div>
+
+  <div class="note">
+    <strong>Si cambia la frecuencia</strong>
+    <p><code>period</code> es cada cuánto se repite el patrón: mensual 12, trimestral 4, diario con patrón semanal 7. Se necesitan al menos 2 ciclos completos (24 meses con <code>period=12</code>). La cantidad de números en <code>ventas</code> debe ser igual a <code>periods</code> en <code>pd.date_range</code>.</p>
+  </div>
+
+  <div class="sec">
+    <h3>Código anotado de la profe</h3>
+    <p class="code-hint">Toca las líneas marcadas en naranja para ver la explicación.</p>
+    <div class="cells" data-cells="c2"></div>
+  </div>
+</section>
+
+<!-- ============================ CLASE 3 ============================ -->
+<section class="view" id="v-clase3" hidden>
+  <div class="head">
+    <p class="eyebrow">Clase 3 · 01_suavizamiento_exponencial_holt_winters_banco_mundial_2.ipynb</p>
+    <h2>Suavizamiento exponencial, Holt y Holt-Winters</h2>
+    <p class="lede">Se descarga el tipo de cambio mensual de Chile desde la API del Banco Mundial, se esconden los últimos 24 meses, se ajustan 4 modelos y gana el de menor RMSE fuera de muestra.</p>
+  </div>
+
+  <div class="grid3">
+    <div class="panel">
+      <h3 style="color:var(--c-ses)">SES</h3>
+      <div class="formula">ℓₜ = α·yₜ + (1−α)·ℓₜ₋₁</div>
+      <p>El nivel nuevo mezcla el dato de hoy con el nivel anterior. Pronóstico: el último nivel para todos los meses, una <strong>línea plana</strong>.</p>
+      <p class="mono" style="color:var(--muted)">α=0,5; ℓ anterior 100; dato 110 → 0,5·110 + 0,5·100 = 105</p>
+    </div>
+    <div class="panel">
+      <h3 style="color:var(--c-holt)">Holt</h3>
+      <div class="formula">ŷ = ℓₜ + h·bₜ</div>
+      <p>Agrega una <strong>pendiente</strong> bₜ. Pronóstico: línea inclinada. Con <code>damped_trend=True</code> la pendiente se apaga y la línea se aplana.</p>
+    </div>
+    <div class="panel">
+      <h3 style="color:var(--c-wa)">Holt-Winters</h3>
+      <div class="formula">ŷ = ℓₜ + h·bₜ + s   ó   (ℓₜ + h·bₜ)·s</div>
+      <p>Agrega la <strong>estacionalidad</strong>: el pronóstico ondula. Aditivo suma (+30 cada diciembre); multiplicativo multiplica (×1,15 = +15%) y exige datos positivos.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Los parámetros</h3>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Parámetro</th><th>En statsmodels</th><th>Suaviza</th><th>Cerca de 1</th><th>Cerca de 0</th></tr></thead>
+      <tbody>
+        <tr><td><strong>α</strong> alpha</td><td><code>smoothing_level</code></td><td>Nivel</td><td>Reacciona mucho a lo último</td><td>Suave, mucha memoria</td></tr>
+        <tr><td><strong>β</strong> beta</td><td><code>smoothing_trend</code></td><td>Tendencia</td><td>La pendiente cambia rápido</td><td>Pendiente casi fija</td></tr>
+        <tr><td><strong>γ</strong> gamma</td><td><code>smoothing_seasonal</code></td><td>Estacionalidad</td><td>El patrón se actualiza rápido</td><td>Patrón casi fijo</td></tr>
+      </tbody>
+    </table></div>
+    <p>Un parámetro pequeño no significa que el modelo esté mal: indica que ese componente evoluciona lentamente.</p>
+  </div>
+
+  <div class="panel lab">
+    <span class="lab-tag">Laboratorio · simulador simplificado</span>
+    <h3>Mueve α, β y γ y mira cómo cambia el ranking</h3>
+    <p>Usa los 48 meses de ventas de la Clase 2: 36 de entrenamiento y los últimos 12 de prueba. Es una versión simplificada para entender los parámetros; los números no son idénticos a los de <code>statsmodels</code>.</p>
+    <div class="seg" id="sm-seg" role="group" aria-label="Modelo a ajustar"></div>
+    <div class="ctrls" id="sm-ctrls"></div>
+    <div class="seg">
+      <button class="btn primary" id="sm-opt">Optimizar este modelo (como fit(optimized=True))</button>
+      <button class="btn" id="sm-optall">Optimizar los 4</button>
+    </div>
+    <div class="chart" id="sm-chart"></div>
+    <div class="tbl-wrap"><table id="sm-tbl"></table></div>
+    <div class="note" id="sm-note"></div>
+  </div>
+
+  <div class="panel">
+    <h3>Las métricas</h3>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Métrica</th><th>Código de la profe</th><th>Se lee como</th></tr></thead>
+      <tbody>
+        <tr><td><strong>MAE</strong></td><td><code>np.mean(np.abs(e))</code></td><td>“En promedio me equivoco X pesos”</td></tr>
+        <tr><td><strong>RMSE</strong></td><td><code>np.sqrt(np.mean(e**2))</code></td><td>Como el MAE, pero castiga más los errores grandes. Siempre RMSE ≥ MAE</td></tr>
+        <tr><td><strong>MAPE</strong></td><td><code>100 * np.mean(np.abs(e / real))</code></td><td>“En promedio me equivoco X %”. No sirve con ceros</td></tr>
+      </tbody>
+    </table></div>
+    <p>Error = real − pronóstico. Ejemplo con errores 10, −20 y 5: MAE = 35/3 = 11,67; RMSE = √(525/3) = √175 = 13,23.</p>
+  </div>
+
+  <div class="panel">
+    <h3>Resultados de la profe (h_prueba = 24)</h3>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Modelo</th><th class="num">MAE</th><th class="num">RMSE</th><th class="num">MAPE (%)</th><th class="num">α</th><th class="num">β</th><th class="num">γ</th></tr></thead>
+      <tbody>
+        <tr class="win"><td>Winters aditivo</td><td class="num">25,534</td><td class="num">32,039</td><td class="num">2,721</td><td class="num">0,9859</td><td class="num">0,0258</td><td class="num">0,0051</td></tr>
+        <tr><td>SES</td><td class="num">26,363</td><td class="num">32,563</td><td class="num">2,816</td><td class="num">0,995</td><td class="num">—</td><td class="num">—</td></tr>
+        <tr><td>Holt</td><td class="num">26,873</td><td class="num">32,887</td><td class="num">2,862</td><td class="num">1,0000</td><td class="num">0,1908</td><td class="num">—</td></tr>
+        <tr><td>Holt-Winters multiplicativo</td><td class="num">29,116</td><td class="num">35,154</td><td class="num">3,123</td><td class="num">0,9598</td><td class="num">0,0069</td><td class="num">0,0399</td></tr>
+      </tbody>
+    </table></div>
+    <div class="grid2">
+      <div class="note"><strong>Interpretación de las métricas</strong><p>Gana Winters aditivo: se equivoca en promedio unos 25,5 pesos por dólar (≈ 2,7%). La diferencia con SES es de medio peso de RMSE, así que agregar tendencia y estacionalidad casi no mejora.</p></div>
+      <div class="note"><strong>Interpretación de los parámetros</strong><p>α ≈ 1 en todos: el nivel es prácticamente el último dato. El tipo de cambio se comporta casi como un paseo aleatorio. γ ≈ 0: la estacionalidad es débil y casi fija.</p></div>
+    </div>
+    <p><strong>Pronóstico final:</strong> se reestiman los 4 modelos con toda la serie y se grafica el ganador en naranja para 12 meses (Winters aditivo: entre ~905 y ~925 pesos, ondulando suavemente). Si ganara SES sería una línea horizontal.</p>
+  </div>
+
+  <div class="warn">
+    <strong>Ojo en el control</strong>
+    <p><code>mejor_modelo = resultados.index[0]</code> sale de la última tabla de métricas que ejecutaste. Si cambias <code>h_prueba</code>, vuelve a correr todo en orden: separación → modelos → comparación → métricas → parámetros → pronóstico.</p>
+  </div>
+
+  <div class="sec">
+    <h3>Código anotado de la profe</h3>
+    <p class="code-hint">Toca las líneas marcadas en naranja para ver la explicación.</p>
+    <div class="cells" data-cells="c3"></div>
+  </div>
+</section>
+
+<!-- ============================ PRÁCTICA ============================ -->
+<section class="view" id="v-practica" hidden>
+  <div class="head">
+    <p class="eyebrow">Actividad práctica · sección 11</p>
+    <h2>La práctica resuelta, paso a paso</h2>
+    <p class="lede">La profe resolvió cada ejercicio copiando sus propias celdas y cambiando un número. Esa es la estrategia para el control: identifica la celda, cópiala y cambia solo lo necesario.</p>
+  </div>
+
+  <div class="panel ex">
+    <div class="ex-h"><span class="ex-n">1</span><h3>Cambie h_prueba de 24 a 12 meses. ¿Cambia el modelo ganador?</h3></div>
+    <p>Copia las celdas de separación, modelos, gráfico, métricas, parámetros y pronóstico. Cambia:</p>
+<div class="diff"><span class="del">- h_prueba = 24</span>
+<span class="add">+ h_prueba = 12</span>
+<span class="del">-     entrenamiento.index[-48:],</span>
+<span class="add">+     entrenamiento.index[-24:],</span>
+<span class="del">- plt.title("Comparación de pronósticos en los últimos 24 meses")</span>
+<span class="add">+ plt.title("Comparación de pronósticos en los últimos 12 meses")</span></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Modelo</th><th class="num">RMSE con 24</th><th class="num">RMSE con 12</th></tr></thead>
+      <tbody>
+        <tr><td>Winters aditivo</td><td class="num"><strong>32,039</strong></td><td class="num">60,709</td></tr>
+        <tr><td>SES</td><td class="num">32,563</td><td class="num"><strong>59,065</strong></td></tr>
+        <tr><td>Holt</td><td class="num">32,887</td><td class="num">66,729</td></tr>
+        <tr><td>Holt-Winters multiplicativo</td><td class="num">35,154</td><td class="num">59,429</td></tr>
+      </tbody>
+    </table></div>
+    <p><span class="pill ok">Respuesta</span> Sí cambia: con 24 meses gana Winters aditivo y con 12 gana SES. La elección depende de la ventana de prueba; con menos meses la métrica es menos confiable (un par de meses raros pesan mucho). Los 4 RMSE están muy cerca, ninguno domina. Como gana SES, el pronóstico final es plano: 917,01 todos los meses.</p>
+  </div>
+
+  <div class="panel ex">
+    <div class="ex-h"><span class="ex-n">2</span><h3>Ajuste Holt sin amortiguación: damped_trend=False. Compare el RMSE.</h3></div>
+    <p>Vuelve a <code>h_prueba = 24</code> y cambia solo el modelo de Holt:</p>
+<div class="diff">  modelo_holt = Holt(
+      entrenamiento,
+<span class="del">-     damped_trend=True,</span>
+<span class="add">+     damped_trend=False,</span>
+      initialization_method="estimated",
+  )</div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Holt</th><th class="num">RMSE</th><th>Lugar en el ranking</th></tr></thead>
+      <tbody>
+        <tr><td>Amortiguado (True)</td><td class="num">32,887</td><td>3.º</td></tr>
+        <tr><td>Sin amortiguar (False)</td><td class="num">41,896</td><td>4.º (último)</td></tr>
+      </tbody>
+    </table></div>
+    <p><span class="pill ok">Respuesta</span> Sin amortiguar, el RMSE sube de 32,9 a 41,9. Holt prolonga la pendiente con la misma fuerza todos los meses y el error crece con el horizonte. La amortiguación evita extrapolar una tendencia indefinidamente.</p>
+    <div class="warn"><strong>Detalle</strong><p>En la celda del gráfico de este ejercicio el título dice “últimos 12 meses” pero la prueba es de 24. Si la copias, corrige el título.</p></div>
+  </div>
+
+  <div class="panel ex">
+    <div class="ex-h"><span class="ex-n">3</span><h3>Compare la amplitud estacional en unidades y como porcentaje del nivel.</h3></div>
+    <p>Amplitud = máximo − mínimo de la estacionalidad. En % = amplitud ÷ nivel × 100. La profe lo hizo de dos formas:</p>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Forma</th><th>Qué usa</th><th class="num">Unidades</th><th class="num">% del nivel</th></tr></thead>
+      <tbody>
+        <tr><td>1 · STL</td><td><code>STL(entrenamiento, period=12, robust=True)</code>: deja que la estacionalidad cambie año a año</td><td class="num">99,24</td><td class="num">16,63%</td></tr>
+        <tr><td>2 · Clásica</td><td><code>seasonal_decompose</code> de la Clase 2: un patrón promedio fijo</td><td class="num">19,37</td><td class="num">2,96%</td></tr>
+      </tbody>
+    </table></div>
+    <p>STL da más porque su max − min toma el pico y el valle de todos los años; la clásica promedia un solo patrón. Después la profe calcula la amplitud <strong>año por año</strong> con STL:</p>
+    <div class="chart" id="pr-amp"></div>
+    <p class="code-hint">Barras: amplitud en unidades (eje izquierdo). Línea: nivel promedio del año (escala propia). Toca un año para ver los números.</p>
+    <div class="readout" id="pr-amp-read">Toca un año.</div>
+  </div>
+
+  <div class="panel ex">
+    <div class="ex-h"><span class="ex-n">4</span><h3>Justifique si corresponde estacionalidad aditiva o multiplicativa.</h3></div>
+    <p>La profe concluye <strong>multiplicativa</strong>. Usa esta estructura para responder:</p>
+    <ol class="prose" style="padding-left:1.3em;margin:0">
+      <li><strong>Evidencia de la descomposición clásica:</strong> efectos aditivos entre −8,7 y +10,7 (≈ 19 unidades); factores entre 0,985 y 1,015 (≈ 3%).</li>
+      <li><strong>Evidencia STL:</strong> la amplitud en unidades no es constante; crece cuando crece el nivel (≈ 11–19 pesos con nivel 485–670; ≈ 68–86 pesos con nivel 760–930).</li>
+      <li><strong>Conclusión:</strong> si la estacionalidad crece con el nivel, es proporcional al nivel → multiplicativa. Si fuera estable en unidades → aditiva.</li>
+    </ol>
+    <div class="note"><strong>Para que no te pillen</strong><p>El RMSE favoreció al aditivo y la justificación dice multiplicativa. No es contradicción: la justificación habla de la forma de la estacionalidad y el RMSE de qué tan bien pronostica en un período. Además la estacionalidad del dólar es pequeña (≈ 3%) y γ ≈ 0, así que ambos pronostican casi lo mismo. Argumenta siempre con los números que te dé el código.</p></div>
+  </div>
+
+  <div class="panel ex">
+    <div class="ex-h"><span class="ex-n">5</span><h3>Grafique los residuos del modelo ganador y calcule su FAC.</h3></div>
+    <div class="warn"><strong>Ojo: el ganador está escrito a mano</strong><p><code>hw_ganador = ajuste_winters_aditivo</code>. Si en tu control gana otro, cambia esa línea por <code>ajuste_ses</code>, <code>ajuste_holt</code> o <code>ajuste_holt_winters_multiplicativo</code>.</p></div>
+    <div class="grid2">
+      <div class="prose">
+        <h4>Cómo leer una FAC</h4>
+        <ul>
+          <li>Eje X: el <strong>rezago</strong>. 1 = correlación con el mes anterior, 12 = con el mismo mes del año anterior.</li>
+          <li>Cada barra: la autocorrelación en ese rezago (entre −1 y 1).</li>
+          <li>Banda sombreada: intervalo de confianza del 95%.</li>
+          <li><strong>Todas dentro</strong> → los residuos son ruido → el modelo capturó la estructura.</li>
+          <li><strong>Alguna afuera</strong> → queda patrón sin explicar. Rezago 12 afuera = estacionalidad no capturada.</li>
+          <li>FACP (parcial): la correlación con el rezago k quitando los rezagos intermedios.</li>
+        </ul>
+      </div>
+      <div class="panel lab" style="border:1px solid var(--line);border-top:4px solid var(--accent)">
+        <span class="lab-tag">Laboratorio · entrena el ojo</span>
+        <p><strong>¿Estos residuos son ruido o queda un patrón?</strong></p>
+        <div class="chart" id="acf-res"></div>
+        <div class="chart" id="acf-bars"></div>
+        <div class="seg">
+          <button class="btn" id="acf-a">Es ruido</button>
+          <button class="btn" id="acf-b">Queda patrón</button>
+          <button class="btn primary" id="acf-new">Otro ejemplo</button>
+        </div>
+        <div id="acf-fb" class="why"></div>
+      </div>
+    </div>
+    <div class="cells" data-cells="pr"></div>
+  </div>
+
+  <div class="panel ex">
+    <div class="ex-h"><span class="ex-n">6</span><h3>Repita el análisis para otro país disponible en GEM.</h3></div>
+    <p>No está resuelto en el notebook. Copia la celda de descarga y cambia el código del país en la URL:</p>
+<div class="diff"><span class="del">- url_gem = "https://api.worldbank.org/v2/country/CHL/indicator/DPANUSLCU"</span>
+<span class="add">+ url_gem = "https://api.worldbank.org/v2/country/PER/indicator/DPANUSLCU"</span></div>
+    <p>Otros códigos: <code>COL</code> Colombia, <code>MEX</code> México, <code>BRA</code> Brasil. Después ejecuta todas las celdas siguientes en orden y cambia los títulos que dicen “Chile”. Si la API no devuelve datos o hay brechas largas, aparece el <code>RuntimeError</code> de la profe: prueba otro país o período. Compara: ¿gana el mismo modelo? ¿α también es ≈ 1?</p>
+  </div>
+
+  <div class="panel">
+    <h3>Preguntas de interpretación</h3>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Pregunta</th><th>Respuesta de la profe (resumen)</th></tr></thead>
+      <tbody>
+        <tr><td>¿Qué ignora SES que sí incorpora Holt?</td><td>La <strong>tendencia</strong>. SES solo actualiza un nivel (pronóstico plano); Holt agrega pendiente y puede proyectar crecimiento o descenso.</td></tr>
+        <tr><td>¿Qué representa γ en Holt-Winters?</td><td>El parámetro de suavizamiento de la <strong>estacionalidad</strong>: qué tan rápido se actualiza el componente estacional con cada dato nuevo.</td></tr>
+        <tr><td>¿Por qué el multiplicativo exige valores positivos?</td><td>Porque la estacionalidad es un <strong>factor proporcional</strong>: se multiplica y se usan razones, que solo tienen sentido con valores positivos.</td></tr>
+        <tr><td>¿Por qué evaluar fuera de muestra?</td><td>Porque dentro de muestra el error es engañosamente bajo. Fuera de muestra se mide la <strong>capacidad real de pronóstico</strong> y se evita el sobreajuste.</td></tr>
+        <tr><td>¿El menor RMSE garantiza residuos sin autocorrelación?</td><td><strong>No.</strong> RMSE mide precisión; la autocorrelación mide si quedó estructura sin modelar. Un modelo puede predecir bien y dejar patrones en los residuos.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============================ QUIZ ============================ -->
+<section class="view" id="v-quiz" hidden>
+  <div class="head">
+    <p class="eyebrow">Autoevaluación</p>
+    <h2>Quiz de las tres clases</h2>
+    <p class="lede">Elige una opción en cada pregunta. Verás al tiro si acertaste y por qué.</p>
+  </div>
+  <div class="score" id="qz-score" aria-live="polite"></div>
+  <div id="qz" style="display:grid;gap:16px"></div>
+  <button class="btn" id="qz-reset" style="justify-self:start">Reiniciar quiz</button>
+</section>
+
+<!-- ============================ CHULETA ============================ -->
+<section class="view" id="v-chuleta" hidden>
+  <div class="head">
+    <p class="eyebrow">Para el día del control</p>
+    <h2>Chuleta</h2>
+  </div>
+
+  <div class="panel">
+    <h3>Me piden… → copio esta celda</h3>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Me piden</th><th>Archivo</th><th>Celda</th></tr></thead>
+      <tbody>
+        <tr><td>Crear y graficar una serie simulada</td><td>Transformaciones</td><td>Creación de <code>df</code> + “Serie original”</td></tr>
+        <tr><td>Log, Box-Cox, raíz, Yeo-Johnson, Z, winsorizar</td><td>Transformaciones</td><td>Secciones 1 a 6</td></tr>
+        <tr><td>Comparar transformaciones en gráficos</td><td>Transformaciones</td><td>“Comparación visual” (7 gráficos)</td></tr>
+        <tr><td>Descomponer (aditiva o multiplicativa)</td><td>Descomposición</td><td>Secciones 2, 4, 5 y 7</td></tr>
+        <tr><td>Efectos o factores estacionales por mes</td><td>Descomposición</td><td>Sección 9</td></tr>
+        <tr><td>Descargar datos del Banco Mundial</td><td>Holt-Winters</td><td>Sección 1</td></tr>
+        <tr><td>Separar entrenamiento y prueba</td><td>Holt-Winters</td><td>Sección 2</td></tr>
+        <tr><td>Ajustar los 4 modelos</td><td>Holt-Winters</td><td>Secciones 3–6, o la celda “Métodos” de la práctica (los 4 juntos)</td></tr>
+        <tr><td>Gráfico de comparación</td><td>Holt-Winters</td><td>Sección 7</td></tr>
+        <tr><td>MAE, RMSE, MAPE y ganador</td><td>Holt-Winters</td><td>Sección 8</td></tr>
+        <tr><td>α, β, γ</td><td>Holt-Winters</td><td>Sección 9</td></tr>
+        <tr><td>Pronóstico futuro</td><td>Holt-Winters</td><td>Sección 10</td></tr>
+        <tr><td>Amplitud estacional</td><td>Práctica</td><td>Ejercicio 3 (STL, clásica, año a año)</td></tr>
+        <tr><td>Residuos, FAC y FACP</td><td>Práctica</td><td>Ejercicio 5</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="panel">
+    <h3>Números escritos a mano que debes revisar</h3>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Dónde</th><th>Qué está fijo</th><th>Qué hacer</th></tr></thead>
+      <tbody>
+        <tr><td>Clase 1, Yeo-Johnson con estilo</td><td><code>lambda_yj = 0.6552</code></td><td>Poner el λ nuevo</td></tr>
+        <tr><td>Clase 1, 7 gráficos</td><td><code>lmbda=0.6575</code>, <code>lmbda=0.6552</code></td><td>Poner los λ nuevos</td></tr>
+        <tr><td>Clase 1, datos</td><td><code>periods=60</code> y <code>np.random.normal(0, 2, 60)</code></td><td>Deben ser iguales</td></tr>
+        <tr><td>Clase 1, atípicos</td><td><code>'2021-11-01'</code>, <code>'2023-11-01'</code></td><td>Deben estar dentro del rango de fechas</td></tr>
+        <tr><td>Clase 2</td><td><code>periods=48</code></td><td>Igual a la cantidad de números en <code>ventas</code></td></tr>
+        <tr><td>Clase 2 y práctica</td><td><code>period=12</code>, <code>m = 12</code>, <code>.iloc[:12]</code>, Ene…Dic</td><td>Cambiar si no es mensual o no parte en enero</td></tr>
+        <tr><td>Clase 3</td><td><code>CHL</code>, <code>DPANUSLCU</code>, <code>"1995M01:2026M12"</code></td><td>País, indicador, fechas</td></tr>
+        <tr><td>Clase 3</td><td><code>h_prueba = 24</code>, <code>h_futuro = 12</code></td><td>Horizontes de prueba y pronóstico</td></tr>
+        <tr><td>Clase 3, comparación</td><td><code>[-48:]</code> y “últimos 24 meses”</td><td>Ajustar el título al nuevo <code>h_prueba</code></td></tr>
+        <tr><td>Práctica ej. 5</td><td><code>hw_ganador = ajuste_winters_aditivo</code></td><td>Poner el ajuste del modelo que ganó</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="panel">
+    <h3>Errores típicos</h3>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Error</th><th>Causa probable</th><th>Solución</th></tr></thead>
+      <tbody>
+        <tr><td><code>NameError: name '…' is not defined</code></td><td>No ejecutaste una celda anterior</td><td>Ejecutar desde arriba (Run All)</td></tr>
+        <tr><td><code>ModuleNotFoundError</code></td><td>Falta un paquete</td><td><code>%pip install scipy</code> (o el que falte) y reiniciar kernel</td></tr>
+        <tr><td><code>AttributeError: … requires jinja2</code></td><td>Falta jinja2 para <code>df.style</code></td><td><code>%pip install jinja2</code></td></tr>
+        <tr><td><code>ValueError: Length of values … does not match</code></td><td>Distinta cantidad de datos y fechas</td><td>Igualar <code>periods</code> con la cantidad de datos</td></tr>
+        <tr><td><code>ValueError</code> en Box-Cox</td><td>Hay ceros o negativos</td><td>Usar Yeo-Johnson</td></tr>
+        <tr><td>Error con <code>seasonal="mul"</code></td><td>Hay ceros o negativos</td><td>Usar <code>"add"</code></td></tr>
+        <tr><td><code>ValueError</code> en <code>seasonal_decompose</code></td><td>Menos de 2 ciclos completos</td><td>Más datos o el <code>period</code> correcto</td></tr>
+        <tr><td><code>RuntimeError: La API no devolvió observaciones</code></td><td>Sin internet o país sin datos</td><td>Revisar conexión o probar otro país</td></tr>
+        <tr><td><code>RuntimeError: Persisten brechas…</code></td><td>Huecos de más de 2 meses</td><td>Es a propósito: otro período o país</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="panel">
+    <h3>Plantilla para responder interpretación</h3>
+    <ol class="prose" style="padding-left:1.3em;margin:0">
+      <li><strong>Qué hice:</strong> qué celda o modelo, con qué parámetros.</li>
+      <li><strong>Qué salió:</strong> el número (RMSE, λ, amplitud, factor…).</li>
+      <li><strong>Qué significa:</strong> en las unidades de la serie o en %.</li>
+      <li><strong>Conclusión:</strong> qué conviene y por qué.</li>
+    </ol>
+    <blockquote>Con h_prueba = 24, el menor RMSE lo obtuvo Winters aditivo (32,04), muy cerca de SES (32,56). En promedio el modelo se equivoca unos 25,5 pesos por dólar (MAPE 2,7%). La diferencia es mínima: con α ≈ 1, el tipo de cambio se comporta casi como un paseo aleatorio y la tendencia y la estacionalidad aportan poca información.</blockquote>
+  </div>
+</section>
+
+<footer class="foot">Guía de estudio basada en los notebooks de la profesora Beatriz Berríos P. El código mostrado es el original de la profe; las explicaciones, los laboratorios y el quiz son material de apoyo.</footer>
+</main>
+
+<script>
+const DATA = {"cells": {"c1": [{"title": "Crear los datos simulados", "src": "transformaciones_supermercado_INE_CCS_1_1.ipynb", "code": "import numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\ntry:\n    from scipy import stats\n    from scipy.stats.mstats import winsorize\nexcept ImportError:\n    print('Instala scipy con: %pip install scipy')\n\n\n# semillaa\nnp.random.seed(142)\n\n# 1. Crear el rango de fechas (60 meses)\nfechas = pd.date_range('2021-01-01', periods=60, freq='MS')\ndf = pd.DataFrame({'Fecha': fechas})\ndf['Mes'] = df['Fecha'].dt.month\ndf['t'] = np.arange(len(df))\n\n# 2. Patrón estacional en Diciembre para ganarle a la tendencia\n# Marzo (3) es el punto más bajo (-40) y Diciembre (12) es por mucho el más alto (+60)\npatron_estacional = {\n    1: -10, 2: -25, 3: -45,  # Mínimo absoluto en Marzo\n    4: -20, 5: -10, 6: 0,\n    7: 5,   8: 10,  9: 15,\n    10: 20, 11: 15, 12: 65  # Máximo absoluto en Diciembre (bajamos Noviembre a 15)\n}\ndf['Estacionalidad'] = df['Mes'].map(patron_estacional)\n\n# 3. Calcular Ventas: Tendencia + Estacionalidad + Ruido\ndf['Ventas'] = 100 + 1.4 * df['t'] + df['Estacionalidad'] + np.random.normal(0, 2, 60)\n\n# 4. Valores atípicos aplicados con precisión quirúrgica\ndf.loc[df['Fecha'] == '2021-11-01', 'Ventas'] += 40  # Atípico Nov 2021\ndf.loc[df['Fecha'] == '2023-11-01', 'Ventas'] += 45  # Atípico Nov 2023\n\n# 5. Crear etiquetas de texto para el eje X (ej: \"Ene-21\", \"Dic-21\")\n# Traducimos meses clave para mantener el formato limpio\nmeses_es = {1:'Ene', 2:'Feb', 3:'Mar', 4:'Abr', 5:'May', 6:'Jun', \n            7:'Jul', 8:'Ago', 9:'Sep', 10:'Oct', 11:'Nov', 12:'Dic'}\ndf['Etiqueta_X'] = df['Fecha'].apply(lambda x: f\"{meses_es[x.month]}-{str(x.year)[2:]}\")", "notes": [["from scipy import stats", "Trae el módulo de estadística de scipy: ahí están <code>boxcox<\/code> y <code>yeojohnson<\/code>."], ["from scipy.stats.mstats import winsorize", "Trae la función que winsoriza (recorta extremos)."], ["except ImportError", "Si scipy no está instalado, en vez de caerse imprime cómo instalarlo."], ["np.random.seed(142)", "Fija la semilla: los números aleatorios salen siempre iguales. Si la cambian, cambian todos los datos y los λ."], ["pd.date_range('2021-01-01', periods=60", "60 fechas mensuales desde enero 2021. <code>MS<\/code> = inicio de mes."], ["df = pd.DataFrame({'Fecha': fechas})", "Crea la tabla con una columna Fecha."], ["df['Mes'] = df['Fecha'].dt.month", "Número del mes: 1 = enero … 12 = diciembre."], ["df['t'] = np.arange(len(df))", "Contador de tiempo 0, 1, …, 59. Se usa para la tendencia y como eje X."], ["patron_estacional = {", "Diccionario mes → efecto estacional. Marzo −45 (mínimo), diciembre +65 (máximo)."], ["df['Estacionalidad'] = df['Mes'].map(", "<code>.map<\/code> reemplaza cada número de mes por su efecto del diccionario."], ["df['Ventas'] = 100 + 1.4", "Ventas = nivel 100 + tendencia 1,4 por mes + estacionalidad + ruido normal (media 0, desv. 2). Es el modelo aditivo T + S + R. Ojo: el 60 de <code>np.random.normal<\/code> debe ser igual a <code>periods<\/code>."], ["'2021-11-01', 'Ventas'] += 40", "Suma 40 solo a noviembre 2021: planta un valor atípico."], ["'2023-11-01', 'Ventas'] += 45", "Suma 45 a noviembre 2023: segundo atípico."], ["meses_es = {", "Nombres cortos de los meses en español para el eje X."], ["df['Etiqueta_X'] = df['Fecha'].apply(", "Arma textos tipo \"Ene-21\": nombre del mes + los 2 últimos dígitos del año."]]}, {"title": "Graficar la serie original", "src": "transformaciones_supermercado_INE_CCS_1_1.ipynb", "code": "# --- Graficar usando las etiquetas de texto del eje X ---\nplt.figure(figsize=(15, 6))\n# Graficamos con alineación perfecta con los textos\nplt.plot(df['t'], df['Ventas'], marker='o', linewidth=2, color='tab:blue', label='Ventas')\n\n# Configurar el eje X para que muestre los meses\nplt.xticks(df['t'], df['Etiqueta_X'], rotation=90, fontsize=9)\n\nplt.title('Ventas de Supermercado: Máximo Real en Diciembre y Mínimo en Marzo')\nplt.xlabel('Mes y Año')\nplt.ylabel('Ventas')\nplt.legend(loc='upper left')\nplt.grid(True, alpha=0.2)\nplt.tight_layout()\nplt.show()", "notes": [["plt.figure(figsize=(15, 6))", "Abre una figura de 15 × 6 pulgadas."], ["plt.plot(df['t'], df['Ventas']", "Dibuja Ventas contra t, con un punto en cada mes (<code>marker='o'<\/code>)."], ["plt.xticks(", "En vez de 0…59, muestra las etiquetas \"Ene-21\"… giradas en 90°."], ["plt.title(", "Título. Resume lo que se ve: máximo en diciembre y mínimo en marzo."], ["plt.legend(", "Cuadro con el nombre de la línea, arriba a la izquierda."], ["plt.grid(", "Cuadrícula suave (<code>alpha<\/code> = transparencia)."], ["plt.tight_layout()", "Ajusta márgenes para que no se corten los textos."]]}, {"title": "Logaritmo", "src": "transformaciones_supermercado_INE_CCS_1_1.ipynb", "code": "if (df['Ventas'] > 0).all():\n    df['Log'] = np.log(df['Ventas'])\nelse:\n    df['Log'] = np.nan\ndf[['Ventas','Log']].head()", "notes": [["if (df['Ventas'] > 0).all():", "Revisa que todos los valores sean positivos. El log de 0 o de un negativo no existe."], ["df['Log'] = np.log(df['Ventas'])", "Logaritmo natural. Diferencias en log ≈ cambios porcentuales."], ["df['Log'] = np.nan", "Si había algún valor ≤ 0, la columna queda vacía."], ["df[['Ventas','Log']].head()", "Muestra las 5 primeras filas de las dos columnas para comparar."]]}, {"title": "Box-Cox", "src": "transformaciones_supermercado_INE_CCS_1_1.ipynb", "code": "if (df['Ventas'] > 0).all():\n    df['BoxCox'], lambda_bc = stats.boxcox(df['Ventas'])\n    print('Lambda Box-Cox:', round(lambda_bc, 4))", "notes": [["df['BoxCox'], lambda_bc = stats.boxcox(", "boxcox devuelve dos cosas: la serie transformada y el λ óptimo. Por eso hay dos nombres a la izquierda."], ["print('Lambda Box-Cox:'", "Imprime λ = 0,6575: entre raíz (0,5) y no transformar (1), o sea, una corrección suave."]]}, {"title": "Raíz cuadrada", "src": "transformaciones_supermercado_INE_CCS_1_1.ipynb", "code": "df['Raiz'] = np.sqrt(df['Ventas'].clip(lower=0))\ndf[['Ventas','Raiz']].head()", "notes": [["np.sqrt(df['Ventas'].clip(lower=0))", "<code>clip(lower=0)<\/code> cambia negativos por 0 y luego saca raíz. Comprime menos que el log."]]}, {"title": "Yeo-Johnson", "src": "transformaciones_supermercado_INE_CCS_1_1.ipynb", "code": "df['YeoJohnson'], lambda_yj = stats.yeojohnson(df['Ventas'])\nprint('Lambda Yeo-Johnson:', round(lambda_yj, 4))", "notes": [["stats.yeojohnson(df['Ventas'])", "Sin λ, devuelve serie + λ óptimo (0,6552). Acepta ceros y negativos."]]}, {"title": "Estandarización Z", "src": "transformaciones_supermercado_INE_CCS_1_1.ipynb", "code": "df['Z'] = (df['Ventas'] - df['Ventas'].mean()) / df['Ventas'].std(ddof=0)\nprint('Media Z:', round(df['Z'].mean(), 6))\nprint('Desv. estándar Z:', round(df['Z'].std(ddof=0), 6))", "notes": [["df['Z'] = (df['Ventas'] - df['Ventas'].mean()) / df['Ventas'].std(ddof=0)", "Resta el promedio y divide por la desviación estándar poblacional (<code>ddof=0<\/code> divide por n)."], ["print('Media Z:'", "Comprueba que la media quedó en 0."], ["print('Desv. estándar Z:'", "Comprueba que la desviación quedó en 1. Ojo: Z no cambia la forma, no normaliza."]]}, {"title": "Winsorización", "src": "transformaciones_supermercado_INE_CCS_1_1.ipynb", "code": "df['Winsorizada'] = np.asarray(winsorize(df['Ventas'], limits=[0.05, 0.05]), dtype=float)\ndf[['Ventas','Winsorizada']].sort_values('Ventas', ascending=False).head(8)", "notes": [["winsorize(df['Ventas'], limits=[0.05, 0.05])", "Recorta el 5% más bajo y el 5% más alto: con 60 datos, 3 por cola. Los reemplaza por el valor del borde, no los borra."], ["np.asarray(", "Convierte el arreglo enmascarado que devuelve winsorize en números normales."], ["sort_values('Ventas', ascending=False).head(8)", "Ordena de mayor a menor y muestra 8 filas: se ven los 3 valores recortados a 206,88."]]}, {"title": "Comparación visual (7 gráficos)", "src": "transformaciones_supermercado_INE_CCS_1_1.ipynb", "code": "# ==========================================\n# CELDA DE GRÁFICOS - SERIE COMPLETA COREGIDA\n# ==========================================\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\nfrom scipy import stats\nfrom scipy.stats import mstats\n\n# 1. Asegurar los cálculos sobre los 60 meses de la serie completa\ndf['BoxCox'] = stats.boxcox(df['Ventas'], lmbda=0.6575)\ndf['Raiz'] = np.sqrt(df['Ventas'])\ndf['YeoJohnson'] = stats.yeojohnson(df['Ventas'], lmbda=0.6552)\ndf['Z'] = (df['Ventas'] - df['Ventas'].mean()) / df['Ventas'].std(ddof=0)\ndf['Winsorizada'] = np.asarray(mstats.winsorize(df['Ventas'], limits=[0.05, 0.05]), dtype=float)\n\n# 2. Configurar los subplots para las 7 columnas (Idéntico a tu estructura original)\ncolumnas = ['Ventas', 'Log', 'BoxCox', 'Raiz', 'YeoJohnson', 'Z', 'Winsorizada']\nfig, axes = plt.subplots(len(columnas), 1, figsize=(11, 16), sharex=True)\n\n# 3. Iterar y graficar sobre toda la línea de tiempo (t) usando tus etiquetas (Etiqueta_X)\nfor ax, col in zip(axes, columnas):\n    # Graficamos usando 't' como eje X numérico para mantener la continuidad perfecta\n    ax.plot(df['t'], df[col], color='#2b5c8f', linewidth=1.8, alpha=0.9, marker='o', markersize=3)\n    ax.set_title(col, fontsize=11, fontweight='bold', loc='left', pad=4)\n    ax.grid(visible=True, alpha=0.25, linestyle='--')\n    ax.tick_params(axis='both', labelsize=9)\n\n# 4. Formatear ÚNICAMENTE el eje X del último gráfico con tus etiquetas de texto para que no se superpongan\nplt.xticks(df['t'], df['Etiqueta_X'], rotation=90, fontsize=8)\n\nplt.tight_layout()\nplt.show()", "notes": [["df['BoxCox'] = stats.boxcox(df['Ventas'], lmbda=0.6575)", "Ojo: λ escrito a mano. Si cambian los datos, pon el λ nuevo."], ["df['YeoJohnson'] = stats.yeojohnson(df['Ventas'], lmbda=0.6552)", "Ojo: λ escrito a mano. Si cambian los datos, pon el λ nuevo."], ["columnas = [", "Las 7 columnas que se van a graficar."], ["fig, axes = plt.subplots(len(columnas), 1", "7 gráficos uno debajo del otro (7 filas, 1 columna) que comparten el eje X."], ["for ax, col in zip(axes, columnas):", "Recorre cada gráfico junto con su columna."], ["ax.plot(df['t'], df[col]", "Dibuja la columna en su gráfico."], ["ax.set_title(col", "Pone el nombre de la columna como título, a la izquierda."], ["plt.xticks(df['t'], df['Etiqueta_X']", "Etiquetas de meses solo en el último gráfico."]]}], "c2": [{"title": "Importar librerías", "src": "Descomposicion_Clasica_Serie_Tiempo.ipynb", "code": "import pandas as pd\nimport matplotlib.pyplot as plt\nfrom statsmodels.tsa.seasonal import seasonal_decompose", "notes": [["from statsmodels.tsa.seasonal import seasonal_decompose", "La función que hace la descomposición clásica."]]}, {"title": "Crear la serie", "src": "Descomposicion_Clasica_Serie_Tiempo.ipynb", "code": "fechas = pd.date_range(\n    start='2020-01-01',\n    periods=48,\n    freq='MS'\n)\n\nventas = [\n    120, 125, 130, 128, 135, 145, 155, 160, 150, 140, 130, 125,\n    130, 135, 140, 138, 145, 158, 168, 175, 165, 152, 142, 135,\n    140, 145, 150, 148, 158, 170, 182, 190, 180, 165, 155, 148,\n    150, 155, 160, 158, 168, 182, 195, 205, 192, 178, 165, 158\n]\n\nserie = pd.Series(ventas, index=fechas)\n\nserie.head()", "notes": [["fechas = pd.date_range(", "Fechas mensuales desde enero 2020."], ["periods=48", "48 meses = 4 años. Debe ser igual a la cantidad de números en <code>ventas<\/code>."], ["ventas = [", "Los datos escritos a mano. Si en el control te dan otros, reemplazas esta lista."], ["serie = pd.Series(ventas, index=fechas)", "Une los números con las fechas: una serie con índice de fechas."]]}, {"title": "Descomposición aditiva", "src": "Descomposicion_Clasica_Serie_Tiempo.ipynb", "code": "descomposicion_aditiva = seasonal_decompose(\n    serie,\n    model='additive',\n    period=12\n)\n\ndescomposicion_aditiva.plot()\nplt.suptitle('Descomposición clásica aditiva', fontsize=14, y=1.02)\nplt.tight_layout()\nplt.show()", "notes": [["seasonal_decompose(", "Descompone en tendencia (promedio móvil de 12), estacionalidad (promedio por mes) y residuo."], ["model='additive'", "Modelo aditivo: Y = T + S + R."], ["period=12", "El patrón se repite cada 12 meses. Trimestral = 4, diario con patrón semanal = 7."], ["descomposicion_aditiva.plot()", "Gráfico de 4 paneles: serie, Trend, Seasonal, Resid."], ["plt.suptitle(", "Título general arriba de los 4 paneles."]]}, {"title": "Extraer cada componente", "src": "Descomposicion_Clasica_Serie_Tiempo.ipynb", "code": "tendencia = descomposicion_aditiva.trend\nestacionalidad = descomposicion_aditiva.seasonal\nresiduo = descomposicion_aditiva.resid\n\ntabla = pd.DataFrame({\n    'Serie': serie,\n    'Tendencia': tendencia,\n    'Estacionalidad': estacionalidad,\n    'Residuo': residuo\n})\n\ntabla.round(2).head(20)", "notes": [["tendencia = descomposicion_aditiva.trend", "Saca la tendencia. Los primeros y últimos 6 meses son NaN."], ["estacionalidad = descomposicion_aditiva.seasonal", "Saca la estacionalidad: los mismos 12 valores repetidos cada año."], ["residuo = descomposicion_aditiva.resid", "Saca el residuo: lo que no explican tendencia ni estacionalidad."], ["tabla.round(2).head(20)", "Muestra 20 filas. Comprobación: Tendencia + Estacionalidad + Residuo = Serie."]]}, {"title": "Descomposición multiplicativa", "src": "Descomposicion_Clasica_Serie_Tiempo.ipynb", "code": "descomposicion_multiplicativa = seasonal_decompose(\n    serie,\n    model='multiplicative',\n    period=12\n)\n\ndescomposicion_multiplicativa.plot()\nplt.suptitle('Descomposición clásica multiplicativa', fontsize=14, y=1.02)\nplt.tight_layout()\nplt.show()", "notes": [["model='multiplicative'", "Modelo multiplicativo: Y = T × S × R. Estacionalidad y residuo quedan alrededor de 1."]]}, {"title": "Tabla de estacionalidad por mes", "src": "Descomposicion_Clasica_Serie_Tiempo.ipynb", "code": "estacionalidad_promedio = pd.DataFrame({\n    'Mes': ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],\n    'Efecto_estacional_aditivo': descomposicion_aditiva.seasonal.iloc[:12].values,\n    'Factor_estacional_multiplicativo': descomposicion_multiplicativa.seasonal.iloc[:12].values\n})\n\nestacionalidad_promedio.round(3)", "notes": [["'Mes': ['Ene'", "Etiquetas de los 12 meses. Ojo: solo calzan si la serie empieza en enero."], ["descomposicion_aditiva.seasonal.iloc[:12].values", "Los primeros 12 valores del efecto aditivo (en unidades; suman ≈ 0)."], ["descomposicion_multiplicativa.seasonal.iloc[:12].values", "Los primeros 12 factores multiplicativos (promedian ≈ 1; 1,05 = 5% sobre la tendencia)."]]}], "c3": [{"title": "Importar librerías", "src": "01_suavizamiento_exponencial_holt_winters_banco_mundial_2.ipynb", "code": "import numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\nimport requests\n\nfrom statsmodels.tsa.holtwinters import (\n    SimpleExpSmoothing,\n    Holt,\n    ExponentialSmoothing,\n)", "notes": [["import requests", "Para pedir datos a internet (la API del Banco Mundial)."], ["SimpleExpSmoothing,", "Modelo SES: solo nivel."], ["Holt,", "Modelo de Holt: nivel + tendencia."], ["ExponentialSmoothing,", "Holt-Winters: nivel + tendencia + estacionalidad."]]}, {"title": "Descarga de la serie", "src": "01_suavizamiento_exponencial_holt_winters_banco_mundial_2.ipynb", "code": "url_gem = \"https://api.worldbank.org/v2/country/CHL/indicator/DPANUSLCU\"\n\nparametros = {\n    \"format\": \"json\",\n    \"source\": 15,\n    \"frequency\": \"M\",\n    \"date\": \"1995M01:2026M12\",\n    \"per_page\": 5000,\n}\n\nrespuesta = requests.get(url_gem, params=parametros, timeout=60)\nrespuesta.raise_for_status()\ncontenido = respuesta.json()\n\nif not isinstance(contenido, list) or len(contenido) < 2 or contenido[1] is None:\n    raise RuntimeError(\n        \"La API no devolvió observaciones. Revise la conexión, el código \"\n        \"DPANUSLCU y la disponibilidad de la fuente GEM 15.\"\n    )\n\ndatos = pd.DataFrame(contenido[1])\ndatos = datos.loc[:, [\"date\", \"value\"]].copy()\ndatos = datos.dropna(subset=[\"value\"])\n\n# La API representa los meses como 2024M01. Se cambia M por guion.\ndatos[\"fecha\"] = pd.to_datetime(\n    datos[\"date\"].astype(str).str.replace(\"M\", \"-\", regex=False),\n    format=\"%Y-%m\",\n)\n\ndatos[\"tipo_cambio\"] = pd.to_numeric(datos[\"value\"], errors=\"coerce\")\ndatos = datos.dropna(subset=[\"tipo_cambio\"])\ndatos = datos.sort_values(\"fecha\")\n\nserie_original = datos.set_index(\"fecha\")[\"tipo_cambio\"]\nserie_original = serie_original[~serie_original.index.duplicated(keep=\"last\")]\nserie_original = serie_original.asfreq(\"MS\")\n\nfaltantes_originales = int(serie_original.isna().sum())\n\n# Solo se interpolan brechas cortas de hasta dos meses.\nserie = serie_original.interpolate(method=\"time\", limit=2)\n\nif serie.isna().any():\n    raise RuntimeError(\n        \"Persisten brechas mayores a dos meses. Revise los datos antes de \"\n        \"ajustar modelos estacionales; no conviene interpolarlas automáticamente.\"\n    )\n\nprint(\"Fuente: Banco Mundial, Global Economic Monitor (GEM)\")\nprint(\"Indicador: DPANUSLCU\")\nprint(\"Primera fecha:\", serie.index.min().strftime(\"%Y-%m\"))\nprint(\"Última fecha:\", serie.index.max().strftime(\"%Y-%m\"))\nprint(\"Observaciones:\", len(serie))\nprint(\"Valores faltantes originales:\", faltantes_originales)\nprint(serie.tail())", "notes": [["url_gem = ", "Dirección de la API. <code>CHL<\/code> = Chile (cámbialo para otro país: PER, COL, MEX…). <code>DPANUSLCU<\/code> = tipo de cambio."], ["\"source\": 15", "Base de datos 15 = Global Economic Monitor."], ["\"frequency\": \"M\"", "Datos mensuales."], ["\"date\": \"1995M01:2026M12\"", "Rango de fechas que se pide."], ["respuesta = requests.get(", "Hace la consulta a internet (espera hasta 60 segundos)."], ["respuesta.raise_for_status()", "Si la página respondió con error, se detiene aquí."], ["contenido = respuesta.json()", "Convierte la respuesta en listas y diccionarios de Python."], ["if not isinstance(contenido, list)", "Revisa que haya datos. La API devuelve [información, datos]."], ["datos = pd.DataFrame(contenido[1])", "La segunda parte (<code>[1]<\/code>) son los datos: se pasan a una tabla."], ["datos.loc[:, [\"date\", \"value\"]]", "Se queda solo con fecha y valor."], ["datos.dropna(subset=[\"value\"])", "Bota filas sin valor."], ["str.replace(\"M\", \"-\"", "La fecha viene como 2024M01: cambia la M por guion para que sea 2024-01."], ["format=\"%Y-%m\"", "Formato año-mes para convertir el texto en fecha."], ["pd.to_numeric(datos[\"value\"], errors=\"coerce\")", "Convierte a número; lo que no sea número queda NaN."], ["datos.sort_values(\"fecha\")", "Ordena de la fecha más antigua a la más nueva."], ["serie_original = datos.set_index(\"fecha\")", "Serie con las fechas como índice."], ["duplicated(keep=", "Elimina fechas repetidas (deja la última)."], ["asfreq(\"MS\")", "Obliga a tener todos los meses; si falta uno aparece como NaN."], ["faltantes_originales = ", "Cuenta cuántos meses faltaban."], ["interpolate(method=\"time\", limit=2)", "Rellena huecos de máximo 2 meses seguidos."], ["if serie.isna().any():", "Si quedan huecos más largos, se detiene a propósito: no conviene inventar tantos datos."], ["print(\"Observaciones:\"", "Con los datos de la profe: 380 meses (1995-01 a 2026-08)."]]}, {"title": "Gráfico y separación entrenamiento / prueba", "src": "01_suavizamiento_exponencial_holt_winters_banco_mundial_2.ipynb", "code": "plt.figure(figsize=(13, 5))\nplt.plot(serie.index, serie.values, color=\"#123047\", linewidth=1.8)\nplt.title(\"Chile: tipo de cambio nominal mensual\")\nplt.xlabel(\"Fecha\")\nplt.ylabel(\"Moneda local por US$\")\nplt.grid(alpha=0.25)\nplt.tight_layout()\nplt.show()\n\n# El período estacional es 12 porque existen 12 meses por año.\nm = 12\n\n# Se reservan los últimos 24 meses para una evaluación fuera de muestra.\nh_prueba = 24\nentrenamiento = serie.iloc[:-h_prueba]\nprueba = serie.iloc[-h_prueba:]\n\nprint(\"\\nTamaño de entrenamiento:\", len(entrenamiento))\nprint(\"Tamaño de prueba:\", len(prueba))", "notes": [["plt.plot(serie.index, serie.values", "Grafica toda la serie con el azul oscuro de la profe (#123047)."], ["m = 12", "Período estacional: 12 meses."], ["h_prueba = 24", "Los últimos 24 meses se esconden al modelo para evaluarlo."], ["entrenamiento = serie.iloc[:-h_prueba]", "Todo menos los últimos 24 → con esto se estima."], ["prueba = serie.iloc[-h_prueba:]", "Solo los últimos 24 → con esto se evalúa (fuera de muestra)."]]}, {"title": "SES", "src": "01_suavizamiento_exponencial_holt_winters_banco_mundial_2.ipynb", "code": "# Adecuado para una serie que fluctúa alrededor de un nivel relativamente\n# estable. No incorpora tendencia ni estacionalidad.\nmodelo_ses = SimpleExpSmoothing(\n    entrenamiento,\n    initialization_method=\"estimated\",\n)\n\najuste_ses = modelo_ses.fit(optimized=True)\npronostico_ses = ajuste_ses.forecast(h_prueba)", "notes": [["modelo_ses = SimpleExpSmoothing(", "1. Define el modelo con los datos de entrenamiento."], ["initialization_method=\"estimated\"", "El nivel inicial también se estima."], ["ajuste_ses = modelo_ses.fit(optimized=True)", "2. Estima α buscando el menor error dentro del entrenamiento."], ["pronostico_ses = ajuste_ses.forecast(h_prueba)", "3. Pronostica 24 meses. En SES es una línea plana."]]}, {"title": "Holt", "src": "01_suavizamiento_exponencial_holt_winters_banco_mundial_2.ipynb", "code": "# Incorpora una tendencia. Se utiliza tendencia amortiguada para evitar que\n# una pendiente estimada se prolongue indefinidamente con igual intensidad.\nmodelo_holt = Holt(\n    entrenamiento,\n    damped_trend=True,\n    initialization_method=\"estimated\",\n)\n\najuste_holt = modelo_holt.fit(optimized=True)\npronostico_holt = ajuste_holt.forecast(h_prueba)", "notes": [["damped_trend=True", "Tendencia amortiguada: la pendiente se va apagando y el pronóstico se aplana."], ["ajuste_holt = modelo_holt.fit(optimized=True)", "Estima α y β (y φ, el amortiguamiento)."]]}, {"title": "Holt-Winters aditivo", "src": "01_suavizamiento_exponencial_holt_winters_banco_mundial_2.ipynb", "code": "# La estacionalidad aditiva representa aumentos o disminuciones de tamaño\n# aproximadamente constante: por ejemplo, +30 unidades cada diciembre.\nmodelo_winters_aditivo = ExponentialSmoothing(\n    entrenamiento,\n    trend=\"add\",\n    damped_trend=True,\n    seasonal=\"add\",\n    seasonal_periods=m,\n    initialization_method=\"estimated\",\n)\n\najuste_winters_aditivo = modelo_winters_aditivo.fit(optimized=True)\npronostico_winters_aditivo = ajuste_winters_aditivo.forecast(h_prueba)", "notes": [["trend=\"add\"", "Tendencia aditiva."], ["seasonal=\"add\"", "Estacionalidad aditiva: suma una cantidad fija cada mes (ej.: +30 cada diciembre)."], ["seasonal_periods=m", "El ciclo dura m = 12 meses."]]}, {"title": "Holt-Winters multiplicativo", "src": "01_suavizamiento_exponencial_holt_winters_banco_mundial_2.ipynb", "code": "# La estacionalidad multiplicativa representa efectos porcentuales. Su uso\n# exige observaciones positivas, condición que cumple el tipo de cambio.\nmodelo_holt_winters_multiplicativo = ExponentialSmoothing(\n    entrenamiento,\n    trend=\"add\",\n    damped_trend=True,\n    seasonal=\"mul\",\n    seasonal_periods=m,\n    initialization_method=\"estimated\",\n)\n\najuste_holt_winters_multiplicativo = (\n    modelo_holt_winters_multiplicativo.fit(optimized=True)\n)\npronostico_holt_winters_multiplicativo = (\n    ajuste_holt_winters_multiplicativo.forecast(h_prueba)\n)", "notes": [["seasonal=\"mul\"", "Estacionalidad multiplicativa: multiplica por un factor (ej.: ×1,15 = +15%). Exige datos positivos."]]}, {"title": "Comparación gráfica", "src": "01_suavizamiento_exponencial_holt_winters_banco_mundial_2.ipynb", "code": "comparacion = pd.DataFrame(index=prueba.index)\ncomparacion[\"Real\"] = prueba\ncomparacion[\"SES\"] = np.asarray(pronostico_ses)\ncomparacion[\"Holt\"] = np.asarray(pronostico_holt)\ncomparacion[\"Winters aditivo\"] = np.asarray(pronostico_winters_aditivo)\ncomparacion[\"Holt-Winters multiplicativo\"] = np.asarray(\n    pronostico_holt_winters_multiplicativo\n)\n\nplt.figure(figsize=(14, 6))\nplt.plot(\n    entrenamiento.index[-48:],\n    entrenamiento.iloc[-48:],\n    color=\"#7A8790\",\n    label=\"Entrenamiento\",\n)\nplt.plot(prueba.index, prueba, color=\"#123047\", linewidth=2.8, label=\"Real\")\nplt.plot(comparacion.index, comparacion[\"SES\"], label=\"SES\")\nplt.plot(comparacion.index, comparacion[\"Holt\"], label=\"Holt\")\nplt.plot(\n    comparacion.index,\n    comparacion[\"Winters aditivo\"],\n    label=\"Winters aditivo\",\n)\nplt.plot(\n    comparacion.index,\n    comparacion[\"Holt-Winters multiplicativo\"],\n    label=\"Holt-Winters multiplicativo\",\n)\nplt.axvline(prueba.index[0], color=\"#C84A4A\", linestyle=\"--\", alpha=0.8)\nplt.title(\"Comparación de pronósticos en los últimos 24 meses\")\nplt.xlabel(\"Fecha\")\nplt.ylabel(\"Moneda local por US$\")\nplt.legend(ncol=2)\nplt.grid(alpha=0.25)\nplt.tight_layout()\nplt.show()", "notes": [["comparacion = pd.DataFrame(index=prueba.index)", "Tabla con las fechas de prueba como índice."], ["comparacion[\"Real\"] = prueba", "Columna con lo que realmente pasó."], ["comparacion[\"SES\"] = np.asarray(pronostico_ses)", "Pega los pronósticos por posición."], ["entrenamiento.index[-48:]", "Muestra los últimos 48 meses del entrenamiento como contexto (gris)."], ["plt.plot(prueba.index, prueba", "Lo real, en azul oscuro y grueso."], ["plt.axvline(", "Línea roja punteada: donde empieza la prueba."], ["plt.legend(ncol=2)", "Leyenda en 2 columnas."]]}, {"title": "Métricas", "src": "01_suavizamiento_exponencial_holt_winters_banco_mundial_2.ipynb", "code": "# MAE: error absoluto medio, en las unidades originales.\n# RMSE: penaliza con mayor fuerza los errores grandes.\n# MAPE: error porcentual medio. No debe usarse si la serie contiene ceros.\n\nerror_ses = prueba.to_numpy() - comparacion[\"SES\"].to_numpy()\nerror_holt = prueba.to_numpy() - comparacion[\"Holt\"].to_numpy()\nerror_wa = prueba.to_numpy() - comparacion[\"Winters aditivo\"].to_numpy()\nerror_hwm = (\n    prueba.to_numpy()\n    - comparacion[\"Holt-Winters multiplicativo\"].to_numpy()\n)\n\nresultados = pd.DataFrame(\n    {\n        \"MAE\": [\n            np.mean(np.abs(error_ses)),\n            np.mean(np.abs(error_holt)),\n            np.mean(np.abs(error_wa)),\n            np.mean(np.abs(error_hwm)),\n        ],\n        \"RMSE\": [\n            np.sqrt(np.mean(error_ses**2)),\n            np.sqrt(np.mean(error_holt**2)),\n            np.sqrt(np.mean(error_wa**2)),\n            np.sqrt(np.mean(error_hwm**2)),\n        ],\n        \"MAPE (%)\": [\n            100 * np.mean(np.abs(error_ses / prueba.to_numpy())),\n            100 * np.mean(np.abs(error_holt / prueba.to_numpy())),\n            100 * np.mean(np.abs(error_wa / prueba.to_numpy())),\n            100 * np.mean(np.abs(error_hwm / prueba.to_numpy())),\n        ],\n    },\n    index=[\n        \"SES\",\n        \"Holt\",\n        \"Winters aditivo\",\n        \"Holt-Winters multiplicativo\",\n    ],\n)\n\nresultados = resultados.sort_values(\"RMSE\")\n\nprint(\"\\nMétricas fuera de muestra\")\nprint(resultados.round(3))\nprint(\"\\nMejor modelo según RMSE:\", resultados.index[0])", "notes": [["error_ses = prueba.to_numpy() - comparacion", "Error = real − pronóstico, para cada mes."], ["np.mean(np.abs(error_ses))", "MAE: promedio de los errores en valor absoluto (en pesos)."], ["np.sqrt(np.mean(error_ses**2))", "RMSE: raíz del promedio de los errores al cuadrado. Castiga más los errores grandes."], ["100 * np.mean(np.abs(error_ses / prueba.to_numpy()))", "MAPE: error porcentual promedio. No sirve si hay ceros."], ["resultados = resultados.sort_values(\"RMSE\")", "Ordena de menor a mayor RMSE: el mejor queda primero."], ["resultados.index[0]", "El nombre del primero = el modelo ganador."]]}, {"title": "Parámetros estimados", "src": "01_suavizamiento_exponencial_holt_winters_banco_mundial_2.ipynb", "code": "parametros_estimados = pd.DataFrame(\n    {\n        \"SES\": [\n            ajuste_ses.params.get(\"smoothing_level\", np.nan),\n            np.nan,\n            np.nan,\n        ],\n        \"Holt\": [\n            ajuste_holt.params.get(\"smoothing_level\", np.nan),\n            ajuste_holt.params.get(\"smoothing_trend\", np.nan),\n            np.nan,\n        ],\n        \"Winters aditivo\": [\n            ajuste_winters_aditivo.params.get(\"smoothing_level\", np.nan),\n            ajuste_winters_aditivo.params.get(\"smoothing_trend\", np.nan),\n            ajuste_winters_aditivo.params.get(\"smoothing_seasonal\", np.nan),\n        ],\n        \"Holt-Winters multiplicativo\": [\n            ajuste_holt_winters_multiplicativo.params.get(\n                \"smoothing_level\", np.nan\n            ),\n            ajuste_holt_winters_multiplicativo.params.get(\n                \"smoothing_trend\", np.nan\n            ),\n            ajuste_holt_winters_multiplicativo.params.get(\n                \"smoothing_seasonal\", np.nan\n            ),\n        ],\n    },\n    index=[\"alpha: nivel\", \"beta: tendencia\", \"gamma: estacionalidad\"],\n)\n\nprint(\"\\nParámetros de suavizamiento\")\nprint(parametros_estimados.round(4))", "notes": [["ajuste_ses.params.get(\"smoothing_level\", np.nan)", "α del modelo. Si no existe el parámetro, pone NaN."], ["\"smoothing_trend\"", "β: suavizamiento de la tendencia."], ["\"smoothing_seasonal\"", "γ: suavizamiento de la estacionalidad."], ["index=[\"alpha: nivel\"", "Nombres de las filas de la tabla."]]}, {"title": "Pronóstico final", "src": "01_suavizamiento_exponencial_holt_winters_banco_mundial_2.ipynb", "code": "h_futuro = 12\n\nses_final = SimpleExpSmoothing(\n    serie,\n    initialization_method=\"estimated\",\n).fit(optimized=True)\n\nholt_final = Holt(\n    serie,\n    damped_trend=True,\n    initialization_method=\"estimated\",\n).fit(optimized=True)\n\nwa_final = ExponentialSmoothing(\n    serie,\n    trend=\"add\",\n    damped_trend=True,\n    seasonal=\"add\",\n    seasonal_periods=m,\n    initialization_method=\"estimated\",\n).fit(optimized=True)\n\nhwm_final = ExponentialSmoothing(\n    serie,\n    trend=\"add\",\n    damped_trend=True,\n    seasonal=\"mul\",\n    seasonal_periods=m,\n    initialization_method=\"estimated\",\n).fit(optimized=True)\n\nfecha_futura = pd.date_range(\n    serie.index.max() + pd.offsets.MonthBegin(1),\n    periods=h_futuro,\n    freq=\"MS\",\n)\n\npronosticos_futuros = pd.DataFrame(index=fecha_futura)\npronosticos_futuros[\"SES\"] = np.asarray(ses_final.forecast(h_futuro))\npronosticos_futuros[\"Holt\"] = np.asarray(holt_final.forecast(h_futuro))\npronosticos_futuros[\"Winters aditivo\"] = np.asarray(\n    wa_final.forecast(h_futuro)\n)\npronosticos_futuros[\"Holt-Winters multiplicativo\"] = np.asarray(\n    hwm_final.forecast(h_futuro)\n)\n\nmejor_modelo = resultados.index[0]\n\nplt.figure(figsize=(14, 6))\nplt.plot(serie.index[-60:], serie.iloc[-60:], color=\"#123047\", label=\"Observado\")\nplt.plot(\n    pronosticos_futuros.index,\n    pronosticos_futuros[mejor_modelo],\n    color=\"#E67E22\",\n    linewidth=2.5,\n    label=f\"Pronóstico: {mejor_modelo}\",\n)\nplt.axvline(serie.index.max(), color=\"#C84A4A\", linestyle=\"--\")\nplt.title(\"Pronóstico de 12 meses con el modelo seleccionado\")\nplt.xlabel(\"Fecha\")\nplt.ylabel(\"Moneda local por US$\")\nplt.legend()\nplt.grid(alpha=0.25)\nplt.tight_layout()\nplt.show()\n\nprint(\"\\nPronósticos futuros\")\nprint(pronosticos_futuros[[mejor_modelo]].round(2))", "notes": [["h_futuro = 12", "Cuántos meses hacia el futuro."], ["ses_final = SimpleExpSmoothing(", "Reestima con TODA la serie (no solo entrenamiento)."], ["serie,", "Ahora se usa la serie completa, para aprovechar los datos más recientes."], ["pd.offsets.MonthBegin(1)", "Empieza el mes siguiente al último dato."], ["mejor_modelo = resultados.index[0]", "El ganador según la última tabla de métricas que ejecutaste."], ["pronosticos_futuros[mejor_modelo]", "Grafica solo la columna del ganador, en naranja."]]}], "pr": [{"title": "Ejercicio 5: residuos y FAC", "src": "01_suavizamiento_exponencial_holt_winters_banco_mundial_2.ipynb", "code": "#Crear la serie de residuos y su “crecimiento”\n\nhw_ganador = ajuste_winters_aditivo   # este sí tiene .resid\n\n\n# Residuos del modelo ganador\nresiduos = hw_ganador.resid.dropna()\n\n\n# \"Crecimiento\" de los residuos: diferencia porcentual\nresiduos_crecimiento = residuos.pct_change().dropna()\n\n\n#FAC y FACP\nfrom statsmodels.graphics.tsaplots import plot_acf, plot_pacf\n\nmax_lags = min(15, len(residuos_crecimiento) // 2 - 1)\n\nfig, axes = plt.subplots(2, 2, figsize=(14, 8))\n\n# FAC del nivel (residuos)\nplot_acf(residuos, lags=max_lags, ax=axes[0, 0], zero=False)\naxes[0, 0].set_title('FAC: residuos del modelo ganador')\n\n# FACP del nivel (residuos)\nplot_pacf(\n    residuos,\n    lags=max_lags,\n    ax=axes[0, 1],\n    zero=False,\n    method='ywm',\n)\naxes[0, 1].set_title('FACP: residuos del modelo ganador')\n\n# FAC del crecimiento de los residuos\nplot_acf(residuos_crecimiento, lags=max_lags, ax=axes[1, 0], zero=False)\naxes[1, 0].set_title('FAC: crecimiento de los residuos')\n\n# FACP del crecimiento de los residuos\nplot_pacf(\n    residuos_crecimiento,\n    lags=max_lags,\n    ax=axes[1, 1],\n    zero=False,\n    method='ywm',\n)\naxes[1, 1].set_title('FACP: crecimiento de los residuos')\n\nplt.tight_layout()\nplt.show()", "notes": [["hw_ganador = ajuste_winters_aditivo", "Ojo: escrito a mano. Si gana otro modelo, cambia por ajuste_ses, ajuste_holt o ajuste_holt_winters_multiplicativo."], ["residuos = hw_ganador.resid.dropna()", "Residuos dentro del entrenamiento: real − ajustado."], ["residuos.pct_change().dropna()", "Variación porcentual de los residuos (lo que la profe llama crecimiento)."], ["from statsmodels.graphics.tsaplots import plot_acf, plot_pacf", "Funciones para graficar la FAC y la FACP."], ["max_lags = min(15", "Mira hasta 15 rezagos."], ["fig, axes = plt.subplots(2, 2", "Grilla de 4 gráficos (2 × 2)."], ["plot_acf(residuos, lags=max_lags, ax=axes[0, 0], zero=False)", "FAC de los residuos, arriba a la izquierda. <code>zero=False<\/code> no dibuja el rezago 0."], ["method='ywm'", "Método de cálculo de la FACP."]]}]}, "c1": {"ventas": [90.2595, 78.2047, 59.8116, 85.1438, 94.9476, 106.4747, 112.6622, 122.7575, 128.7988, 131.5489, 167.9266, 181.309, 106.1324, 91.6658, 76.5133, 101.5144, 109.8941, 127.5879, 131.07, 137.235, 143.9193, 152.9795, 151.0893, 194.4521, 124.1606, 113.4036, 92.3942, 120.9043, 130.2834, 139.2373, 146.1163, 154.9822, 159.4953, 167.747, 206.8819, 216.0988, 134.0119, 127.2037, 106.589, 130.9236, 143.1794, 156.2677, 165.7707, 170.391, 173.4969, 183.9052, 182.072, 229.6777, 155.6995, 139.5992, 127.1269, 146.691, 162.4075, 174.8934, 181.5785, 189.7319, 193.8606, 196.6442, 194.0166, 244.0196], "etq": ["Ene-21", "Feb-21", "Mar-21", "Abr-21", "May-21", "Jun-21", "Jul-21", "Ago-21", "Sep-21", "Oct-21", "Nov-21", "Dic-21", "Ene-22", "Feb-22", "Mar-22", "Abr-22", "May-22", "Jun-22", "Jul-22", "Ago-22", "Sep-22", "Oct-22", "Nov-22", "Dic-22", "Ene-23", "Feb-23", "Mar-23", "Abr-23", "May-23", "Jun-23", "Jul-23", "Ago-23", "Sep-23", "Oct-23", "Nov-23", "Dic-23", "Ene-24", "Feb-24", "Mar-24", "Abr-24", "May-24", "Jun-24", "Jul-24", "Ago-24", "Sep-24", "Oct-24", "Nov-24", "Dic-24", "Ene-25", "Feb-25", "Mar-25", "Abr-25", "May-25", "Jun-25", "Jul-25", "Ago-25", "Sep-25", "Oct-25", "Nov-25", "Dic-25"], "wins": [90.2595, 85.1438, 85.1438, 85.1438, 94.9476, 106.4747, 112.6622, 122.7575, 128.7988, 131.5489, 167.9266, 181.309, 106.1324, 91.6658, 85.1438, 101.5144, 109.8941, 127.5879, 131.07, 137.235, 143.9193, 152.9795, 151.0893, 194.4521, 124.1606, 113.4036, 92.3942, 120.9043, 130.2834, 139.2373, 146.1163, 154.9822, 159.4953, 167.747, 206.8819, 206.8819, 134.0119, 127.2037, 106.589, 130.9236, 143.1794, 156.2677, 165.7707, 170.391, 173.4969, 183.9052, 182.072, 206.8819, 155.6995, 139.5992, 127.1269, 146.691, 162.4075, 174.8934, 181.5785, 189.7319, 193.8606, 196.6442, 194.0166, 206.8819]}, "c2": {"serie": [120, 125, 130, 128, 135, 145, 155, 160, 150, 140, 130, 125, 130, 135, 140, 138, 145, 158, 168, 175, 165, 152, 142, 135, 140, 145, 150, 148, 158, 170, 182, 190, 180, 165, 155, 148, 150, 155, 160, 158, 168, 182, 195, 205, 192, 178, 165, 158], "add": {"trend": [null, null, null, null, null, null, 137.3333, 138.1667, 139.0, 139.8333, 140.6667, 141.625, 142.7083, 143.875, 145.125, 146.25, 147.25, 148.1667, 149.0, 149.8333, 150.6667, 151.5, 152.4583, 153.5, 154.5833, 155.7917, 157.0417, 158.2083, 159.2917, 160.375, 161.3333, 162.1667, 163.0, 163.8333, 164.6667, 165.5833, 166.625, 167.7917, 168.9167, 169.9583, 170.9167, 171.75, null, null, null, null, null, null], "seasonal": [-14.3113, -10.4919, -6.7002, -9.8113, -1.8252, 10.2303, 19.4387, 25.272, 14.4387, 0.9387, -9.9363, -17.2419, -14.3113, -10.4919, -6.7002, -9.8113, -1.8252, 10.2303, 19.4387, 25.272, 14.4387, 0.9387, -9.9363, -17.2419, -14.3113, -10.4919, -6.7002, -9.8113, -1.8252, 10.2303, 19.4387, 25.272, 14.4387, 0.9387, -9.9363, -17.2419, -14.3113, -10.4919, -6.7002, -9.8113, -1.8252, 10.2303, 19.4387, 25.272, 14.4387, 0.9387, -9.9363, -17.2419], "resid": [null, null, null, null, null, null, -1.772, -3.4387, -3.4387, -0.772, -0.7303, 0.6169, 1.603, 1.6169, 1.5752, 1.5613, -0.4248, -0.397, -0.4387, -0.1053, -0.1053, -0.4387, -0.522, -1.2581, -0.272, -0.2998, -0.3414, -0.397, 0.5336, -0.6053, 1.228, 2.5613, 2.5613, 0.228, 0.2697, -0.3414, -2.3137, -2.2998, -2.2164, -2.147, -1.0914, 0.0197, null, null, null, null, null, null]}, "mul": {"trend": [null, null, null, null, null, null, 137.3333, 138.1667, 139.0, 139.8333, 140.6667, 141.625, 142.7083, 143.875, 145.125, 146.25, 147.25, 148.1667, 149.0, 149.8333, 150.6667, 151.5, 152.4583, 153.5, 154.5833, 155.7917, 157.0417, 158.2083, 159.2917, 160.375, 161.3333, 162.1667, 163.0, 163.8333, 164.6667, 165.5833, 166.625, 167.7917, 168.9167, 169.9583, 170.9167, 171.75, null, null, null, null, null, null], "seasonal": [0.9067, 0.9321, 0.9569, 0.9374, 0.9877, 1.0633, 1.1295, 1.1673, 1.0942, 1.0051, 0.9334, 0.8864, 0.9067, 0.9321, 0.9569, 0.9374, 0.9877, 1.0633, 1.1295, 1.1673, 1.0942, 1.0051, 0.9334, 0.8864, 0.9067, 0.9321, 0.9569, 0.9374, 0.9877, 1.0633, 1.1295, 1.1673, 1.0942, 1.0051, 0.9334, 0.8864, 0.9067, 0.9321, 0.9569, 0.9374, 0.9877, 1.0633, 1.1295, 1.1673, 1.0942, 1.0051, 0.9334, 0.8864], "resid": [null, null, null, null, null, null, 0.9993, 0.992, 0.9862, 0.9961, 0.9901, 0.9957, 1.0047, 1.0067, 1.0082, 1.0066, 0.997, 1.0029, 0.9983, 1.0006, 1.0009, 0.9982, 0.9978, 0.9922, 0.9988, 0.9986, 0.9982, 0.998, 1.0042, 0.9969, 0.9988, 1.0037, 1.0092, 1.002, 1.0084, 1.0084, 0.9928, 0.9911, 0.9899, 0.9917, 0.9951, 0.9966, null, null, null, null, null, null]}}, "amp": [[1995, 28.905, 396.313, 7.293], [1996, 19.69, 411.346, 4.787], [1997, 13.171, 423.625, 3.109], [1998, 9.299, 459.313, 2.025], [1999, 20.245, 503.687, 4.019], [2000, 40.047, 545.205, 7.345], [2001, 56.624, 630.202, 8.985], [2002, 57.347, 688.849, 8.325], [2003, 44.687, 685.231, 6.522], [2004, 33.444, 621.886, 5.378], [2005, 34.296, 562.351, 6.099], [2006, 24.134, 531.856, 4.538], [2007, 25.508, 519.709, 4.908], [2008, 28.342, 511.954, 5.536], [2009, 35.228, 535.281, 6.581], [2010, 32.586, 508.394, 6.41], [2011, 22.314, 480.789, 4.641], [2012, 14.681, 485.115, 3.026], [2013, 11.326, 502.015, 2.256], [2014, 16.073, 569.939, 2.82], [2015, 16.737, 643.854, 2.6], [2016, 18.942, 670.157, 2.827], [2017, 26.252, 646.188, 4.063], [2018, 43.108, 646.605, 6.667], [2019, 58.289, 700.208, 8.325], [2020, 69.288, 757.16, 9.151], [2021, 71.145, 784.632, 9.067], [2022, 74.55, 830.766, 8.974], [2023, 69.205, 857.121, 8.074], [2024, 68.446, 905.79, 7.557], [2025, 76.27, 927.776, 8.221], [2026, 85.779, 906.633, 9.461]], "quiz": [{"tema": "Clase 1", "q": "La serie tiene ceros y valores negativos. ¿Qué transformación de la lista puedes usar?", "o": ["Logaritmo", "Box-Cox", "Yeo-Johnson", "Ninguna"], "a": 2, "w": "Yeo-Johnson acepta ceros y negativos. Logaritmo y Box-Cox exigen valores estrictamente positivos."}, {"tema": "Clase 1", "q": "Box-Cox entrega λ ≈ 0. ¿A qué equivale la transformación?", "o": ["Raíz cuadrada", "Logaritmo", "No transformar", "Inverso"], "a": 1, "w": "λ = 0 es el logaritmo; 0,5 la raíz; 1 no transformar; −1 el inverso."}, {"tema": "Clase 1", "q": "¿Qué afirmación sobre la estandarización Z es correcta?", "o": ["Hace que los datos tengan distribución normal", "Elimina los valores atípicos", "Centra en 0 y deja desviación 1 sin cambiar la forma", "Exige datos positivos"], "a": 2, "w": "Z resta el promedio y divide por la desviación: la forma de la distribución no cambia. Por eso la profe insiste en que no normaliza, y es sensible a atípicos."}, {"tema": "Clase 1", "q": "Tienes 80 datos y usas <code>winsorize(..., limits=[0.05, 0.05])<\/code>. ¿Cuántos valores se modifican?", "o": ["4", "8", "0", "Se eliminan 8 filas"], "a": 1, "w": "5% de 80 = 4 por cola: 4 abajo y 4 arriba, 8 en total. Se reemplazan por el valor del borde; siguen siendo 80 datos."}, {"tema": "Clase 1", "q": "¿Para qué sirve <code>np.random.seed(142)<\/code>?", "o": ["Para que los datos aleatorios salgan siempre iguales", "Para generar 142 datos", "Para quitar el ruido", "Para fijar la tendencia en 1,42"], "a": 0, "w": "Fija la semilla del generador aleatorio: el resultado es reproducible. Si cambias la semilla, cambian los datos y los λ."}, {"tema": "Clase 1", "q": "Te cambian la semilla. ¿Qué debes actualizar a mano en el código de la profe?", "o": ["Nada, todo se recalcula solo", "Los λ escritos como 0.6552 y 0.6575", "El número de meses", "Los nombres de los meses"], "a": 1, "w": "<code>lambda_yj = 0.6552<\/code> y <code>lmbda=0.6575<\/code> / <code>lmbda=0.6552<\/code> en la celda de gráficos están fijos. Hay que poner los λ nuevos."}, {"tema": "Clase 2", "q": "Las oscilaciones estacionales se hacen más grandes a medida que la serie sube. ¿Qué modelo corresponde?", "o": ["Aditivo", "Multiplicativo", "Cualquiera da lo mismo", "SES"], "a": 1, "w": "Si la amplitud crece con el nivel, la estacionalidad es proporcional: modelo multiplicativo, Y = T × S × R."}, {"tema": "Clase 2", "q": "El factor estacional multiplicativo de julio es 1,129. ¿Qué significa?", "o": ["Julio está 1,129 unidades sobre la tendencia", "Julio está 12,9% sobre la tendencia", "Julio está 12,9% bajo la tendencia", "La tendencia sube 1,129 por mes"], "a": 1, "w": "(1,129 − 1) × 100 = 12,9% sobre la tendencia. Un factor menor que 1 indica que el mes está bajo la tendencia."}, {"tema": "Clase 2", "q": "¿Por qué la tendencia de <code>seasonal_decompose<\/code> es NaN en los primeros y últimos 6 meses?", "o": ["Porque faltan datos en la serie", "Porque es un promedio móvil centrado de 12 meses", "Porque hay atípicos", "Por un error del código"], "a": 1, "w": "El promedio móvil centrado necesita 6 meses antes y 6 después. En los extremos no los hay."}, {"tema": "Clase 2", "q": "Te dan datos trimestrales con un patrón que se repite cada año. ¿Qué <code>period<\/code> usas?", "o": ["12", "4", "3", "1"], "a": 1, "w": "4 trimestres por año. Mensual = 12; diario con patrón semanal = 7."}, {"tema": "Clase 3", "q": "¿Qué incorpora Holt que SES ignora?", "o": ["La estacionalidad", "La tendencia (pendiente)", "Los residuos", "El RMSE"], "a": 1, "w": "SES solo modela el nivel. Holt agrega una pendiente; Holt-Winters agrega además la estacionalidad."}, {"tema": "Clase 3", "q": "En SES se estimó α = 0,98. ¿Cómo se interpreta?", "o": ["El modelo tiene mucha memoria del pasado", "El nivel prácticamente copia el último dato", "No hay tendencia", "El modelo está mal"], "a": 1, "w": "α cerca de 1 da casi todo el peso al dato nuevo: el pronóstico es casi el último valor. Es lo que pasó con el tipo de cambio."}, {"tema": "Clase 3", "q": "¿Para qué se separan los últimos <code>h_prueba<\/code> meses?", "o": ["Para que el modelo tenga menos datos y corra más rápido", "Para evaluar el pronóstico con datos que el modelo no vio", "Para eliminar atípicos", "Para calcular la tendencia"], "a": 1, "w": "Es la evaluación fuera de muestra: mide la capacidad real de pronóstico y evita el sobreajuste."}, {"tema": "Clase 3", "q": "Un modelo tiene MAE = 20 y RMSE = 35. ¿Qué indica la diferencia?", "o": ["Que el modelo es perfecto", "Que hubo algunos errores grandes", "Que el MAPE es 15%", "Que hay que usar el multiplicativo"], "a": 1, "w": "El RMSE eleva los errores al cuadrado y castiga más los grandes. Si es bastante mayor que el MAE, hubo meses con errores grandes."}, {"tema": "Clase 3", "q": "¿Cuándo no conviene usar MAPE?", "o": ["Cuando la serie tiene ceros o valores cercanos a cero", "Cuando la serie es mensual", "Cuando hay tendencia", "Siempre conviene"], "a": 0, "w": "MAPE divide por el valor real: con ceros no está definido y con valores cercanos a cero explota."}, {"tema": "Clase 3", "q": "¿Qué entrega <code>resultados.index[0]<\/code> después de <code>sort_values(\"RMSE\")<\/code>?", "o": ["El RMSE más alto", "El nombre del modelo con menor RMSE", "La primera fecha de prueba", "El valor de α"], "a": 1, "w": "sort_values ordena de menor a mayor; el índice de la primera fila es el nombre del ganador."}, {"tema": "Clase 3", "q": "Gana SES. ¿Cómo se ve su pronóstico de 12 meses?", "o": ["Una línea que sube", "Una línea que ondula", "Una línea horizontal", "Una línea que baja y se aplana"], "a": 2, "w": "En SES el pronóstico para cualquier horizonte es el último nivel: todos los meses el mismo valor (917,01 en el ejercicio 1)."}, {"tema": "Clase 3", "q": "¿Qué hace <code>damped_trend=True<\/code>?", "o": ["Elimina la tendencia", "Hace que la pendiente se vaya apagando en el pronóstico", "Agrega estacionalidad", "Duplica la tendencia"], "a": 1, "w": "La tendencia amortiguada evita que la pendiente se prolongue indefinidamente con la misma fuerza. Sin ella, Holt subió de 32,9 a 41,9 de RMSE."}, {"tema": "Práctica", "q": "En el ejercicio 5 de tu control ganó Holt. ¿Qué línea cambias?", "o": ["<code>hw_ganador = ajuste_holt<\/code>", "<code>damped_trend=False<\/code>", "<code>max_lags = 12<\/code>", "No hay que cambiar nada"], "a": 0, "w": "La profe escribió a mano <code>hw_ganador = ajuste_winters_aditivo<\/code>. Debes poner el ajuste del modelo que ganó."}, {"tema": "Práctica", "q": "En la FAC de los residuos, la barra del rezago 12 sale de la banda azul. ¿Qué indica?", "o": ["Que los residuos son ruido blanco", "Que queda estacionalidad anual sin capturar", "Que el RMSE es bajo", "Que hay que cambiar h_prueba"], "a": 1, "w": "Autocorrelación significativa en el rezago 12 de una serie mensual = patrón anual que el modelo no explicó."}, {"tema": "Práctica", "q": "¿El modelo con menor RMSE tiene garantizados residuos sin autocorrelación?", "o": ["Sí, siempre", "No, son cosas distintas y hay que revisar ambas", "Sí, si el MAPE también es bajo", "Solo si es multiplicativo"], "a": 1, "w": "El RMSE mide precisión; la FAC de residuos mide si quedó estructura sin modelar. Un modelo puede pronosticar bien y dejar patrones."}, {"tema": "Práctica", "q": "Quieres repetir el análisis para Colombia. ¿Qué cambias primero?", "o": ["<code>m = 12<\/code> por <code>m = 4<\/code>", "<code>CHL<\/code> por <code>COL<\/code> en <code>url_gem<\/code>", "<code>DPANUSLCU<\/code> por <code>COL<\/code>", "<code>h_futuro<\/code>"], "a": 1, "w": "El país va en la URL como código ISO de 3 letras. Después vuelves a correr todas las celdas en orden y ajustas los títulos."}, {"tema": "Práctica", "q": "¿Qué diferencia a STL de la descomposición clásica en el ejercicio 3?", "o": ["STL no calcula tendencia", "STL permite que la estacionalidad cambie con los años", "STL solo sirve para datos anuales", "Son iguales"], "a": 1, "w": "La clásica entrega un patrón fijo (promedio). STL deja que la estacionalidad evolucione y con robust=True resiste atípicos. Por eso su amplitud (99) fue mayor que la clásica (19)."}]};
+
+/* ---------- utilidades ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const fmt = (v, d = 2) => v == null || isNaN(v) ? "—" : v.toLocaleString("es-CL", { minimumFractionDigits: d, maximumFractionDigits: d });
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs = {}, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+function niceTicks(lo, hi, n = 5) {
+  if (lo === hi) { lo -= 1; hi += 1; }
+  const span = hi - lo, step0 = span / n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1, 2, 2.5, 5, 10].map(f => f * mag).find(s => span / s <= n) || 10 * mag;
+  const t0 = Math.floor(lo / step) * step, out = [];
+  for (let t = t0; t <= hi + step * 0.5; t += step) out.push(+t.toFixed(10));
+  return out;
+}
+const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+
+/* ---------- gráfico de líneas ---------- */
+function lineChart(host, o) {
+  host.innerHTML = "";
+  const W = 720, H = o.h || 300, m = { l: 54, r: 14, t: 12, b: o.noX ? 10 : 30 };
+  const n = o.n;
+  const all = o.series.flatMap(s => s.data).filter(v => v != null && isFinite(v));
+  let lo = Math.min(...all), hi = Math.max(...all);
+  if (o.yZero) { lo = Math.min(lo, o.yZero); hi = Math.max(hi, o.yZero); }
+  const pad = (hi - lo) * 0.06 || 1; lo -= pad; hi += pad;
+  const ticks = niceTicks(lo, hi, o.h && o.h < 180 ? 3 : 5);
+  lo = Math.min(lo, ticks[0]); hi = Math.max(hi, ticks[ticks.length - 1]);
+  const X = i => m.l + i * (W - m.l - m.r) / Math.max(1, n - 1);
+  const Y = v => m.t + (hi - v) * (H - m.t - m.b) / (hi - lo);
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": o.label || "Gráfico" }, host);
+  ticks.forEach(t => {
+    el("line", { x1: m.l, x2: W - m.r, y1: Y(t), y2: Y(t), style: "stroke:var(--line)", "stroke-width": 1 }, svg);
+    const tx = el("text", { x: m.l - 6, y: Y(t) + 4, "text-anchor": "end" }, svg); tx.textContent = (o.yfmt || (v => fmt(v, Math.abs(hi - lo) < 5 ? 2 : 0)))(t);
+  });
+  if (!o.noX) {
+    const every = o.xEvery || Math.ceil(n / 8);
+    for (let i = 0; i < n; i += every) { const tx = el("text", { x: X(i), y: H - 8, "text-anchor": "middle" }, svg); tx.textContent = o.xl(i); }
+  }
+  if (o.hline != null) el("line", { x1: m.l, x2: W - m.r, y1: Y(o.hline), y2: Y(o.hline), style: "stroke:var(--muted)", "stroke-width": 1, "stroke-dasharray": "2 3" }, svg);
+  if (o.vline != null) el("line", { x1: X(o.vline), x2: X(o.vline), y1: m.t, y2: H - m.b, style: "stroke:var(--signal)", "stroke-width": 1.6, "stroke-dasharray": "6 4" }, svg);
+  o.series.forEach(s => {
+    let d = "", pen = false;
+    s.data.forEach((v, i) => { if (v == null || !isFinite(v)) { pen = false; return; } d += (pen ? "L" : "M") + X(i).toFixed(1) + " " + Y(v).toFixed(1); pen = true; });
+    if (s.dotsOnly) { s.data.forEach((v, i) => { if (v != null) el("circle", { cx: X(i), cy: Y(v), r: 2.6, style: `fill:${s.color}` }, svg); }); return; }
+    el("path", { d, fill: "none", style: `stroke:${s.color}`, "stroke-width": s.w || 2, "stroke-linejoin": "round", "stroke-linecap": "round", "stroke-dasharray": s.dash || "", opacity: s.op || 1 }, svg);
+    if (s.dots) s.data.forEach((v, i) => { if (v != null) el("circle", { cx: X(i), cy: Y(v), r: 2.4, style: `fill:${s.color}` }, svg); });
+  });
+  const guide = el("line", { y1: m.t, y2: H - m.b, style: "stroke:var(--muted)", "stroke-width": 1, visibility: "hidden" }, svg);
+  const hit = el("rect", { x: m.l, y: 0, width: W - m.l - m.r, height: H, fill: "transparent" }, svg);
+  const tip = document.createElement("div"); tip.className = "tip"; tip.hidden = true; host.appendChild(tip);
+  const move = ev => {
+    const r = svg.getBoundingClientRect(); const px = (ev.clientX - r.left) * W / r.width;
+    const i = Math.max(0, Math.min(n - 1, Math.round((px - m.l) / ((W - m.l - m.r) / Math.max(1, n - 1)))));
+    guide.setAttribute("x1", X(i)); guide.setAttribute("x2", X(i)); guide.setAttribute("visibility", "visible");
+    if (o.onHover) o.onHover(i);
+    if (o.noTip) return;
+    const rows = o.series.filter(s => s.name && s.data[i] != null).map(s => `<span style="color:${s.color}">●</span> ${s.name}: ${(o.tfmt || fmt)(s.data[i])}`);
+    tip.innerHTML = `<b>${o.xl(i)}</b><br>${rows.join("<br>")}`; tip.hidden = false;
+    const hx = (ev.clientX - r.left), hw = host.clientWidth;
+    tip.style.left = Math.min(hx + 12, hw - tip.offsetWidth - 4) + "px"; tip.style.top = "6px";
+  };
+  hit.addEventListener("pointermove", move); hit.addEventListener("pointerdown", move);
+  hit.addEventListener("pointerleave", () => { tip.hidden = true; guide.setAttribute("visibility", "hidden"); });
+  if (o.legend !== false) {
+    const lg = document.createElement("div"); lg.className = "legend";
+    o.series.filter(s => s.name && !s.noLegend).forEach(s => { lg.insertAdjacentHTML("beforeend", `<span><i style="background:${s.color}${s.w > 2.4 ? ";height:4px" : ""}"></i>${s.name}</span>`); });
+    if (o.vlineName) lg.insertAdjacentHTML("beforeend", `<span><i class="dash" style="border-color:var(--signal)"></i>${o.vlineName}</span>`);
+    host.appendChild(lg);
+  }
+}
+
+/* ---------- gráfico de barras ---------- */
+function barChart(host, o) {
+  host.innerHTML = "";
+  const W = 720, H = o.h || 220, m = { l: 54, r: 14, t: 12, b: 28 };
+  const base = o.base || 0, n = o.values.length;
+  let lo = Math.min(base, ...o.values), hi = Math.max(base, ...o.values);
+  if (o.band) { lo = Math.min(lo, base - o.band); hi = Math.max(hi, base + o.band); }
+  const pad = (hi - lo) * 0.08 || 0.1; lo -= pad; hi += pad;
+  const ticks = niceTicks(lo, hi, 4); lo = Math.min(lo, ticks[0]); hi = Math.max(hi, ticks[ticks.length - 1]);
+  const bw = (W - m.l - m.r) / n;
+  const X = i => m.l + i * bw + bw / 2, Y = v => m.t + (hi - v) * (H - m.t - m.b) / (hi - lo);
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": o.label || "Gráfico de barras" }, host);
+  ticks.forEach(t => { el("line", { x1: m.l, x2: W - m.r, y1: Y(t), y2: Y(t), style: "stroke:var(--line)" }, svg); const tx = el("text", { x: m.l - 6, y: Y(t) + 4, "text-anchor": "end" }, svg); tx.textContent = fmt(t, o.dec ?? 1); });
+  if (o.band) el("rect", { x: m.l, width: W - m.l - m.r, y: Y(base + o.band), height: Y(base - o.band) - Y(base + o.band), style: "fill:var(--accent)", opacity: 0.14 }, svg);
+  el("line", { x1: m.l, x2: W - m.r, y1: Y(base), y2: Y(base), style: "stroke:var(--muted)" }, svg);
+  o.values.forEach((v, i) => {
+    const out = o.band && Math.abs(v - base) > o.band;
+    const color = o.colorFn ? o.colorFn(v, i, out) : "var(--accent)";
+    if (o.stem) {
+      el("line", { x1: X(i), x2: X(i), y1: Y(base), y2: Y(v), style: `stroke:${color}`, "stroke-width": 2.5 }, svg);
+      el("circle", { cx: X(i), cy: Y(v), r: 4, style: `fill:${color}` }, svg);
+    } else {
+      const y0 = Math.min(Y(v), Y(base)), hh = Math.abs(Y(v) - Y(base));
+      const r = el("rect", { x: X(i) - bw * 0.32, width: bw * 0.64, y: y0, height: Math.max(hh, 1), rx: 2, style: `fill:${color}` }, svg);
+      if (o.onPick) { r.style.cursor = "pointer"; r.addEventListener("pointerdown", () => o.onPick(i)); r.addEventListener("pointerenter", () => o.onPick(i)); }
+    }
+    const tx = el("text", { x: X(i), y: H - 8, "text-anchor": "middle" }, svg); tx.textContent = o.labels[i];
+  });
+  if (o.overlay) { // línea en escala propia (eje derecho implícito)
+    const ov = o.overlay, olo = Math.min(...ov.data) * 0.95, ohi = Math.max(...ov.data) * 1.03;
+    const OY = v => m.t + (ohi - v) * (H - m.t - m.b) / (ohi - olo);
+    el("path", { d: ov.data.map((v, i) => (i ? "L" : "M") + X(i).toFixed(1) + " " + OY(v).toFixed(1)).join(""), fill: "none", style: `stroke:${ov.color}`, "stroke-width": 2.4 }, svg);
+  }
+  return svg;
+}
+
+/* ---------- navegación ---------- */
+const VIEWS = ["mapa", "clase1", "clase2", "clase3", "practica", "quiz", "chuleta"];
+const drawn = {};
+function show(v) {
+  if (!VIEWS.includes(v)) v = "mapa";
+  VIEWS.forEach(x => { $("#v-" + x).hidden = x !== v; });
+  $$(".tab").forEach(t => t.setAttribute("aria-selected", t.dataset.v === v ? "true" : "false"));
+  const t = $(`.tab[data-v="${v}"]`); if (t) t.scrollIntoView({ block: "nearest", inline: "nearest" });
+  if (!drawn[v] && DRAW[v]) { DRAW[v](); drawn[v] = true; }
+  try { history.replaceState(null, "", "#" + v); } catch (e) {}
+}
+$$(".tab").forEach(t => t.addEventListener("click", () => { show(t.dataset.v); window.scrollTo(0, 0); }));
+$$("[data-go]").forEach(b => b.addEventListener("click", () => { show(b.dataset.go); window.scrollTo(0, 0); }));
+
+/* ---------- código anotado ---------- */
+function renderCells() {
+  $$("[data-cells]").forEach(box => {
+    DATA.cells[box.dataset.cells].forEach(c => {
+      const d = document.createElement("details"); d.className = "cell";
+      d.innerHTML = `<summary>${esc(c.title)}<span class="cell-src">${esc(c.src)}</span></summary>`;
+      const code = document.createElement("div"); code.className = "code";
+      c.code.split("\n").forEach(line => {
+        const span = document.createElement("span"); span.className = "ln";
+        const hash = line.indexOf("#");
+        span.innerHTML = hash >= 0 && !/["']/.test(line.slice(0, hash)) ? esc(line.slice(0, hash)) + `<span class="cm">${esc(line.slice(hash))}</span>` : esc(line) || " ";
+        const a = c.notes.find(nt => line.includes(nt[0]));
+        if (a) {
+          span.classList.add("has"); span.tabIndex = 0; span.setAttribute("role", "button");
+          const toggle = () => {
+            const nx = span.nextElementSibling;
+            if (nx && nx.classList.contains("expl")) { nx.remove(); span.classList.remove("on"); return; }
+            const ex = document.createElement("div"); ex.className = "expl"; ex.innerHTML = a[1]; span.after(ex); span.classList.add("on");
+          };
+          span.addEventListener("click", toggle);
+          span.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } });
+        }
+        code.appendChild(span);
+      });
+      d.appendChild(code); box.appendChild(d);
+    });
+  });
+}
+
+/* ---------- Clase 1: laboratorio de transformaciones ---------- */
+const TR = { k: "Ventas", lamBC: 0.6575, lamYJ: 0.6552, win: 0.05 };
+const TR_OPTS = [["Ventas", "Original"], ["Log", "Logaritmo"], ["BoxCox", "Box-Cox"], ["Raiz", "Raíz"], ["YeoJohnson", "Yeo-Johnson"], ["Z", "Z"], ["Winsorizada", "Winsorizada"]];
+const mean = a => a.reduce((s, v) => s + v, 0) / a.length;
+const sd0 = a => { const mu = mean(a); return Math.sqrt(mean(a.map(v => (v - mu) ** 2))); };
+const skew = a => { const mu = mean(a), m2 = mean(a.map(v => (v - mu) ** 2)), m3 = mean(a.map(v => (v - mu) ** 3)); return m3 / Math.pow(m2, 1.5); };
+function winsor(a, p) {
+  const n = a.length, idx = a.map((v, i) => i).sort((i, j) => a[i] - a[j]), out = a.slice();
+  const lo = Math.floor(p * n), up = n - Math.round(p * n);
+  for (let k = 0; k < lo; k++) out[idx[k]] = a[idx[lo]];
+  for (let k = up; k < n; k++) out[idx[k]] = a[idx[up - 1]];
+  return out;
+}
+function transform(k) {
+  const y = DATA.c1.ventas;
+  if (k === "Log") return y.map(Math.log);
+  if (k === "BoxCox") return y.map(v => Math.abs(TR.lamBC) < 1e-9 ? Math.log(v) : (Math.pow(v, TR.lamBC) - 1) / TR.lamBC);
+  if (k === "Raiz") return y.map(v => Math.sqrt(Math.max(0, v)));
+  if (k === "YeoJohnson") return y.map(v => Math.abs(TR.lamYJ) < 1e-9 ? Math.log(v + 1) : (Math.pow(v + 1, TR.lamYJ) - 1) / TR.lamYJ);
+  if (k === "Z") { const mu = mean(y), s = sd0(y); return y.map(v => (v - mu) / s); }
+  if (k === "Winsorizada") return winsor(y, TR.win);
+  return y.slice();
+}
+const TR_NOTES = {
+  Ventas: "Tendencia al alza, mínimo cada marzo, máximo cada diciembre y dos atípicos en Nov-21 y Nov-23. Asimetría positiva leve.",
+  Log: "Mismos picos y valles, pero los valores altos quedan comprimidos: los diciembres de los últimos años ya no se ven tan exagerados. La asimetría pasa a ser negativa: el log corrige de más esta serie, que era poco asimétrica.",
+  BoxCox: "Con λ = 0,6575 (el óptimo) la corrección es suave. Mueve λ a 0 y verás el logaritmo; a 0,5, la raíz; a 1, la serie sin transformar (solo corrida).",
+  Raiz: "Comprime los valores altos, pero menos que el logaritmo. La forma queda casi igual a la original.",
+  YeoJohnson: "Con datos positivos se comporta casi igual que Box-Cox (λ = 0,6552). Su ventaja es que también acepta ceros y negativos.",
+  Z: "Misma forma que la original: solo cambió la escala (media 0, desviación 1). Por eso se dice que Z no normaliza. El atípico de Nov-21 tiene Z ≈ 0,60: con tendencia, un valor raro para su mes no es extremo para toda la serie.",
+  Winsorizada: ""
+};
+function drawTR() {
+  const seg = $("#tr-seg");
+  seg.innerHTML = TR_OPTS.map(([k, l]) => `<button class="btn" data-k="${k}" aria-pressed="${k === TR.k}">${l}</button>`).join("");
+  $$("button", seg).forEach(b => b.addEventListener("click", () => { TR.k = b.dataset.k; drawTR(); }));
+  const lamW = $("#tr-lam-wrap"), winW = $("#tr-win-wrap");
+  lamW.hidden = !(TR.k === "BoxCox" || TR.k === "YeoJohnson"); winW.hidden = TR.k !== "Winsorizada";
+  const lamKey = TR.k === "BoxCox" ? "lamBC" : "lamYJ";
+  if (!lamW.hidden) { $("#tr-lam").value = TR[lamKey]; $("#tr-lam-o").textContent = fmt(TR[lamKey], 4); }
+  $("#tr-win").value = TR.win; $("#tr-win-o").textContent = Math.round(TR.win * 100) + "% → " + Math.floor(TR.win * 60 + 1e-9) + " datos por cola";
+  const y = DATA.c1.ventas, t = transform(TR.k), et = DATA.c1.etq;
+  const series = TR.k === "Winsorizada"
+    ? [{ name: "Ventas (original)", data: y, color: "var(--train)", w: 1.5, dots: true }, { name: "Winsorizada", data: t, color: "var(--accent)", w: 2.2, dots: true }]
+    : [{ name: TR_OPTS.find(o => o[0] === TR.k)[1], data: t, color: "var(--accent)", w: 2, dots: true }];
+  lineChart($("#tr-chart"), { n: 60, xl: i => et[i], series, xEvery: 6, h: 300, tfmt: v => fmt(v, 4), label: "Serie transformada" });
+  const st = [["Mín", Math.min(...t)], ["Máx", Math.max(...t)], ["Media", mean(t)], ["Desv. est.", sd0(t)], ["Asimetría", skew(t)]];
+  $("#tr-stats").innerHTML = st.map(([l, v]) => `<div class="stat"><b>${fmt(v, Math.abs(v) < 20 ? 4 : 2)}</b><span>${l}</span></div>`).join("");
+  let note = TR_NOTES[TR.k];
+  if (TR.k === "Winsorizada") {
+    const ch = y.map((v, i) => [et[i], v, t[i]]).filter(r => r[1] !== r[2]);
+    note = `Con limits=[${TR.win.toFixed(2)}, ${TR.win.toFixed(2)}] se reemplazan ${ch.length} valores (no se borran: siguen siendo 60). ` +
+      (ch.length ? "Cambiaron: " + ch.map(r => `${r[0]} ${fmt(r[1])} → ${fmt(r[2])}`).join("; ") + ". Fíjate que arriba se recortan los diciembres recientes, no los atípicos de noviembre: la winsorización mira los extremos de toda la serie." : "Con 0% no se modifica nada.");
+  }
+  $("#tr-note").innerHTML = `<strong>Qué ves</strong><p>${note}</p>`;
+}
+$("#tr-lam").addEventListener("input", e => { TR[TR.k === "BoxCox" ? "lamBC" : "lamYJ"] = +e.target.value; drawTR(); });
+$("#tr-win").addEventListener("input", e => { TR.win = +e.target.value; drawTR(); });
+
+/* ---------- Clase 2: descomposición ---------- */
+let DC = "add";
+function drawDC() {
+  const c = DATA.c2, d = c[DC], n = c.serie.length;
+  const xl = i => MESES[i % 12] + "-" + String(20 + Math.floor(i / 12));
+  const box = $("#dc-charts"); box.innerHTML = "";
+  const read = i => {
+    const T = d.trend[i], S = d.seasonal[i], R = d.resid[i], Y = c.serie[i];
+    $("#dc-read").innerHTML = T == null
+      ? `${xl(i)}: Serie = ${fmt(Y)} · Tendencia = NaN (faltan 6 meses a un lado para el promedio móvil), Residuo = NaN · Estacionalidad = ${fmt(S, DC === "add" ? 2 : 3)}`
+      : DC === "add"
+        ? `${xl(i)}: T ${fmt(T)} + S ${fmt(S)} + R ${fmt(R)} = ${fmt(T + S + R)} ✔ Serie = ${fmt(Y)}`
+        : `${xl(i)}: T ${fmt(T)} × S ${fmt(S, 3)} × R ${fmt(R, 3)} = ${fmt(T * S * R)} ✔ Serie = ${fmt(Y)}`;
+  };
+  [["Serie (observada)", c.serie], ["Trend", d.trend], ["Seasonal", d.seasonal], ["Resid", d.resid]].forEach(([nm, arr], k) => {
+    const h = document.createElement("div"); h.className = "chart"; box.appendChild(h);
+    const lab = document.createElement("div"); lab.className = "eyebrow"; lab.textContent = nm; h.before(lab);
+    lineChart(h, { n, xl, h: 150, xEvery: 6, noX: k < 3, legend: false, noTip: true, onHover: read,
+      series: [{ name: nm, data: arr, color: "var(--accent)", w: 1.8, dotsOnly: nm === "Resid" }],
+      hline: nm === "Resid" ? (DC === "add" ? 0 : 1) : null, yfmt: v => fmt(v, nm === "Trend" || nm.startsWith("Serie") ? 0 : DC === "add" ? 0 : 2), label: nm });
+  });
+  const s12 = d.seasonal.slice(0, 12);
+  barChart($("#dc-bars"), { labels: MESES, values: s12, base: DC === "add" ? 0 : 1, dec: DC === "add" ? 0 : 2, h: 220,
+    colorFn: v => (DC === "add" ? v >= 0 : v >= 1) ? "var(--c-wa)" : "var(--c-hwm)", label: "Estacionalidad por mes" });
+  const a = DATA.c2.add.seasonal.slice(0, 12), mu = DATA.c2.mul.seasonal.slice(0, 12);
+  $("#dc-tbl").innerHTML = `<thead><tr><th>Mes</th><th class="num">Efecto aditivo</th><th class="num">Factor multiplicativo</th><th>Lectura</th></tr></thead><tbody>` +
+    MESES.map((mm, i) => `<tr><td>${mm}</td><td class="num">${fmt(a[i], 3)}</td><td class="num">${fmt(mu[i], 3)}</td><td>${a[i] >= 0 ? "+" : "−"}${fmt(Math.abs(a[i]), 1)} unidades · ${mu[i] >= 1 ? "+" : "−"}${fmt(Math.abs(mu[i] - 1) * 100, 1)}% respecto de la tendencia</td></tr>`).join("") + `</tbody>`;
+  read(6);
+}
+$$("#dc-seg .btn").forEach(b => b.addEventListener("click", () => { DC = b.dataset.m; $$("#dc-seg .btn").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false")); drawDC(); }));
+
+/* ---------- Clase 3: simulador ---------- */
+const Y48 = DATA.c2.serie, NTR = 36, H = 12, M = 12;
+const SM = {
+  sel: "wa",
+  p: { ses: { a: 0.5 }, holt: { a: 0.5, b: 0.1, phi: 0.98, damped: true }, wa: { a: 0.3, b: 0.05, g: 0.3, phi: 0.98, damped: true }, hwm: { a: 0.3, b: 0.05, g: 0.3, phi: 0.98, damped: true } }
+};
+const MODELS = [["ses", "SES", "var(--c-ses)"], ["holt", "Holt", "var(--c-holt)"], ["wa", "Winters aditivo", "var(--c-wa)"], ["hwm", "Holt-Winters multiplicativo", "var(--c-hwm)"]];
+function runModel(k, p, y) {
+  const n = y.length; let sse = 0;
+  if (k === "ses") {
+    let l = y[0];
+    for (let t = 1; t < n; t++) { const e = y[t] - l; sse += e * e; l = p.a * y[t] + (1 - p.a) * l; }
+    return { sse, fc: Array(H).fill(l) };
+  }
+  const phi = p.damped ? p.phi : 1;
+  if (k === "holt") {
+    let l = y[0], b = y[1] - y[0];
+    for (let t = 1; t < n; t++) { const pr = l + phi * b, e = y[t] - pr; sse += e * e; const ln = p.a * y[t] + (1 - p.a) * pr; b = p.b * (ln - l) + (1 - p.b) * phi * b; l = ln; }
+    const fc = []; let acc = 0; for (let h = 1; h <= H; h++) { acc += Math.pow(phi, h); fc.push(l + acc * b); } return { sse, fc };
+  }
+  const mul = k === "hwm";
+  const m1 = mean(y.slice(0, M)), m2 = mean(y.slice(M, 2 * M));
+  let l = m1, b = (m2 - m1) / M; const s = y.slice(0, M).map(v => mul ? v / m1 : v - m1);
+  for (let t = 0; t < n; t++) {
+    const si = s[t % M], base = l + phi * b, pr = mul ? base * si : base + si, e = y[t] - pr; sse += e * e;
+    const ln = p.a * (mul ? y[t] / si : y[t] - si) + (1 - p.a) * base;
+    b = p.b * (ln - l) + (1 - p.b) * phi * b;
+    s[t % M] = p.g * (mul ? y[t] / ln : y[t] - ln) + (1 - p.g) * si; l = ln;
+  }
+  const fc = []; let acc = 0;
+  for (let h = 1; h <= H; h++) { acc += Math.pow(phi, h); const base = l + acc * b, si = s[(n + h - 1) % M]; fc.push(mul ? base * si : base + si); }
+  return { sse, fc };
+}
+function optimize(k) {
+  const y = Y48.slice(0, NTR), p = SM.p[k]; let best = null;
+  const grid = (lo, hi, st) => { const o = []; for (let v = lo; v <= hi + 1e-9; v += st) o.push(+v.toFixed(3)); return o; };
+  const A = k === "ses" ? grid(0.01, 1, 0.01) : grid(0.05, 1, 0.05), B = grid(0.0, 1, 0.05), G = grid(0.0, 1, 0.05), PH = p.damped ? [0.8, 0.85, 0.9, 0.95, 0.98] : [1];
+  const tryP = q => { const r = runModel(k, q, y); if (isFinite(r.sse) && (!best || r.sse < best.sse)) best = { sse: r.sse, q: { ...q } }; };
+  if (k === "ses") A.forEach(a => tryP({ a }));
+  else if (k === "holt") A.forEach(a => B.forEach(b => PH.forEach(phi => tryP({ a, b, phi, damped: p.damped }))));
+  else A.forEach(a => B.forEach(b => G.forEach(g => PH.forEach(phi => tryP({ a, b, g, phi, damped: p.damped })))));
+  if (best) SM.p[k] = best.q;
+}
+function metrics(fc) {
+  const real = Y48.slice(NTR), e = real.map((v, i) => v - fc[i]);
+  return { mae: mean(e.map(Math.abs)), rmse: Math.sqrt(mean(e.map(v => v * v))), mape: 100 * mean(e.map((v, i) => Math.abs(v / real[i]))) };
+}
+function sliderRow(k, key, label, min, max, step) {
+  const id = `sm-${k}-${key}`;
+  return `<div class="ctrl"><label for="${id}"><span>${label}</span><output id="${id}-o">${fmt(SM.p[k][key], 2)}</output></label><input type="range" id="${id}" data-key="${key}" min="${min}" max="${max}" step="${step}" value="${SM.p[k][key]}"></div>`;
+}
+function drawSMctrls() {
+  const k = SM.sel, p = SM.p[k];
+  $("#sm-seg").innerHTML = MODELS.map(([id, nm, col]) => `<button class="btn" data-k="${id}" aria-pressed="${id === k}"><span style="color:${col}">●</span> ${nm}</button>`).join("");
+  $$("#sm-seg .btn").forEach(b => b.addEventListener("click", () => { SM.sel = b.dataset.k; drawSMctrls(); drawSM(); }));
+  let h = sliderRow(k, "a", "α nivel", 0.01, 1, 0.01);
+  if (k !== "ses") h += sliderRow(k, "b", "β tendencia", 0, 1, 0.01);
+  if (k === "wa" || k === "hwm") h += sliderRow(k, "g", "γ estacionalidad", 0, 1, 0.01);
+  if (k !== "ses") h += `<label class="check"><input type="checkbox" id="sm-${k}-damped" ${p.damped ? "checked" : ""}> damped_trend=True (φ = ${fmt(p.phi, 2)})</label>`;
+  $("#sm-ctrls").innerHTML = h;
+  $$("#sm-ctrls input[type=range]").forEach(r => r.addEventListener("input", () => { SM.p[k][r.dataset.key] = +r.value; $("#" + r.id + "-o").textContent = fmt(+r.value, 2); drawSM(); }));
+  const dm = $(`#sm-${k}-damped`); if (dm) dm.addEventListener("change", () => { SM.p[k].damped = dm.checked; drawSM(); });
+}
+function drawSM() {
+  const tr = Y48.slice(0, NTR), res = {};
+  MODELS.forEach(([k]) => { res[k] = runModel(k, SM.p[k], tr); res[k].m = metrics(res[k].fc); });
+  const pad = a => Array(NTR).fill(null).concat(a);
+  const series = [
+    { name: "Entrenamiento", data: tr.concat(Array(H).fill(null)), color: "var(--train)", w: 1.8 },
+    { name: "Real", data: Array(NTR - 1).fill(null).concat(Y48.slice(NTR - 1)), color: "var(--accent)", w: 3 },
+    ...MODELS.map(([k, nm, col]) => ({ name: nm, data: Array(NTR - 1).fill(null).concat([tr[NTR - 1]], res[k].fc), color: col, w: k === SM.sel ? 2.8 : 1.6, op: k === SM.sel ? 1 : 0.75 }))
+  ];
+  lineChart($("#sm-chart"), { n: 48, xl: i => MESES[i % 12] + "-" + String(20 + Math.floor(i / 12)), series, vline: NTR, vlineName: "Inicio de la prueba", xEvery: 6, h: 320, label: "Simulador de pronósticos" });
+  const rank = MODELS.map(([k, nm, col]) => ({ k, nm, col, ...res[k].m })).sort((a, b) => a.rmse - b.rmse);
+  $("#sm-tbl").innerHTML = `<thead><tr><th>Modelo</th><th class="num">MAE</th><th class="num">RMSE</th><th class="num">MAPE (%)</th><th>Parámetros</th></tr></thead><tbody>` +
+    rank.map((r, i) => { const p = SM.p[r.k]; const ps = `α=${fmt(p.a, 2)}` + (p.b != null ? ` β=${fmt(p.b, 2)}` : "") + (p.g != null ? ` γ=${fmt(p.g, 2)}` : "") + (r.k !== "ses" ? (p.damped ? ` φ=${fmt(p.phi, 2)}` : " sin amortiguar") : "");
+      return `<tr class="${i === 0 ? "win" : ""}"><td><span style="color:${r.col}">●</span> ${r.nm}</td><td class="num">${fmt(r.mae)}</td><td class="num">${fmt(r.rmse)}</td><td class="num">${fmt(r.mape)}</td><td class="mono" style="font-size:0.8rem">${ps}</td></tr>`; }).join("") + `</tbody>`;
+  const p = SM.p[SM.sel];
+  const tips = [];
+  if (p.a > 0.9) tips.push("α casi 1: el nivel copia el último dato, el modelo casi olvida el pasado (como el tipo de cambio de la clase).");
+  else if (p.a < 0.15) tips.push("α bajo: el nivel cambia muy lento, mucha memoria del pasado.");
+  if (SM.sel === "holt" && !p.damped) tips.push("Sin amortiguar, la pendiente se prolonga igual todos los meses (ejercicio 2 de la práctica).");
+  if ((SM.sel === "wa" || SM.sel === "hwm") && p.g < 0.05) tips.push("γ casi 0: el patrón estacional prácticamente no se actualiza.");
+  if (SM.sel === "ses") tips.push("El pronóstico de SES siempre es una línea plana: el último nivel.");
+  $("#sm-note").innerHTML = `<strong>Gana ${rank[0].nm} (menor RMSE)</strong><p>${tips.join(" ") || "Prueba el botón Optimizar: busca los parámetros con menor error dentro del entrenamiento, como hace fit(optimized=True). Fíjate que optimizar dentro de muestra no garantiza ganar fuera de muestra."}</p>`;
+}
+$("#sm-opt").addEventListener("click", () => { optimize(SM.sel); drawSMctrls(); drawSM(); });
+$("#sm-optall").addEventListener("click", () => { MODELS.forEach(([k]) => optimize(k)); drawSMctrls(); drawSM(); });
+
+/* ---------- Práctica: amplitud por año y FAC ---------- */
+function drawAMP() {
+  const t = DATA.amp;
+  barChart($("#pr-amp"), { labels: t.map(r => "’" + String(r[0]).slice(2)), values: t.map(r => r[1]), dec: 0, h: 240,
+    colorFn: () => "var(--c-ses)", overlay: { data: t.map(r => r[2]), color: "var(--forecast)" }, label: "Amplitud estacional por año",
+    onPick: i => { const r = t[i]; $("#pr-amp-read").textContent = `${r[0]}: amplitud ${fmt(r[1], 3)} pesos · nivel promedio ${fmt(r[2], 3)} · amplitud ${fmt(r[3], 3)}% del nivel`; } });
+}
+let rngState = 7;
+const rnd = () => { rngState |= 0; rngState = rngState + 0x6D2B79F5 | 0; let t = Math.imul(rngState ^ rngState >>> 15, 1 | rngState); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const gauss = () => Math.sqrt(-2 * Math.log(rnd() + 1e-12)) * Math.cos(2 * Math.PI * rnd());
+let ACF = null;
+function newACF() {
+  const types = ["ruido", "estacional", "ar"], ty = types[Math.floor(rnd() * 3)], n = 120, r = [];
+  let prev = 0;
+  for (let t = 0; t < n; t++) {
+    let v = gauss();
+    if (ty === "estacional") v = 0.8 * gauss() + 1.4 * Math.sin(2 * Math.PI * t / 12);
+    if (ty === "ar") { v = 0.7 * prev + gauss(); prev = v; }
+    r.push(v);
+  }
+  const mu = mean(r), den = r.reduce((s, v) => s + (v - mu) ** 2, 0), ac = [];
+  for (let k = 1; k <= 15; k++) { let s = 0; for (let t = k; t < n; t++) s += (r[t] - mu) * (r[t - k] - mu); ac.push(s / den); }
+  ACF = { ty, r, ac, band: 1.96 / Math.sqrt(n) };
+  lineChart($("#acf-res"), { n, xl: i => "t=" + i, series: [{ name: "Residuo", data: r, color: "var(--accent)", w: 1.3 }], hline: 0, h: 140, xEvery: 20, legend: false, label: "Residuos" });
+  barChart($("#acf-bars"), { labels: ac.map((v, i) => String(i + 1)), values: ac, band: ACF.band, stem: true, dec: 1, h: 200,
+    colorFn: (v, i, out) => out ? "var(--signal)" : "var(--accent)", label: "FAC de los residuos" });
+  $("#acf-fb").innerHTML = "";
+}
+function answerACF(saysNoise) {
+  const out = ACF.ac.map((v, i) => [i + 1, v]).filter(([, v]) => Math.abs(v) > ACF.band);
+  const isNoise = ACF.ty === "ruido";
+  const ok = saysNoise === isNoise;
+  const expl = { ruido: "Son ruido blanco: las barras quedan dentro de la banda (con 15 rezagos, que 1 se escape por azar es normal).",
+    estacional: "Queda estacionalidad: barras grandes en los rezagos 12 (positiva) y 6 (negativa), y una ola que se repite. El modelo no capturó el patrón anual.",
+    ar: "Quedó autocorrelación: el rezago 1 es grande y las barras bajan de a poco. Cada residuo se parece al anterior; el modelo dejó estructura sin explicar." }[ACF.ty];
+  $("#acf-fb").innerHTML = `<span class="pill ${ok ? "ok" : "bad"}">${ok ? "Correcto" : "No"}</span> ${expl} Rezagos fuera de la banda: ${out.length ? out.map(o => o[0]).join(", ") : "ninguno"}.`;
+}
+$("#acf-a").addEventListener("click", () => answerACF(true));
+$("#acf-b").addEventListener("click", () => answerACF(false));
+$("#acf-new").addEventListener("click", newACF);
+
+/* ---------- Quiz ---------- */
+const QZ = DATA.quiz;
+const qState = {};
+function drawQZ() {
+  const box = $("#qz"); box.innerHTML = "";
+  QZ.forEach((q, i) => {
+    const d = document.createElement("div"); d.className = "panel q";
+    d.innerHTML = `<p class="eyebrow">${q.tema} · Pregunta ${i + 1}</p><h4>${q.q}</h4><div class="q-opts"></div><div class="why" hidden></div>`;
+    const opts = $(".q-opts", d), why = $(".why", d);
+    q.o.forEach((t, j) => {
+      const b = document.createElement("button"); b.className = "opt"; b.innerHTML = t;
+      b.addEventListener("click", () => { qState[i] = j; paint(); updScore(); });
+      opts.appendChild(b);
+    });
+    const paint = () => {
+      if (qState[i] == null) return;
+      $$(".opt", d).forEach((b, j) => { b.disabled = true; if (j === q.a) b.classList.add("right"); else if (j === qState[i]) b.classList.add("wrong"); });
+      why.hidden = false; why.innerHTML = `<span class="pill ${qState[i] === q.a ? "ok" : "bad"}">${qState[i] === q.a ? "Correcto" : "Incorrecto"}</span> ${q.w}`;
+    };
+    paint(); box.appendChild(d);
+  });
+  updScore();
+}
+function updScore() {
+  const done = Object.keys(qState).length, ok = Object.entries(qState).filter(([i, j]) => QZ[i].a === j).length;
+  $("#qz-score").textContent = `${ok} correctas de ${done} respondidas · ${QZ.length} preguntas`;
+}
+$("#qz-reset").addEventListener("click", () => { for (const k in qState) delete qState[k]; drawQZ(); window.scrollTo(0, 0); });
+
+/* ---------- arranque ---------- */
+const DRAW = { clase1: drawTR, clase2: drawDC, clase3: () => { drawSMctrls(); drawSM(); }, practica: () => { drawAMP(); newACF(); }, quiz: drawQZ };
+renderCells();
+show((location.hash || "#mapa").slice(1));
+</script>
+
+</body>
+</html>
