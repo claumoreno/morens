@@ -1,46 +1,50 @@
-# MORENS — página web
+# MORENS · página web
 
-Tienda en línea sencilla para la marca MORENS. Es una página estática (HTML, CSS y JavaScript, sin instalar nada) que se publica gratis con **GitHub Pages**. Los pedidos llegan por **WhatsApp**.
+Página estática (HTML, CSS y JavaScript, sin instalar nada) publicada con GitHub Pages en https://claumoreno.github.io/morens/
 
-## Publicarla (una sola vez)
+## Páginas
 
-1. En GitHub, entra al repositorio → **Settings** → **Pages**.
-2. En *Build and deployment* → *Source*, elige **Deploy from a branch**.
-3. Selecciona la rama (`main` o la que tenga estos archivos) y la carpeta **/ (root)** → **Save**.
-4. En uno o dos minutos la página estará en `https://<tu-usuario>.github.io/morens/`.
-
-Cada vez que subas cambios a esa rama, la página se actualiza sola.
+| Archivo         | Qué es                                                        |
+|-----------------|---------------------------------------------------------------|
+| `index.html`    | Inicio: portada, la cápsula, la semana, gusto adquirido, el cuaderno, club, mujeres que hacen y La mesa |
+| `producto.html` | Ficha de cada prenda (`producto.html?p=top-medianoche`)       |
+| `nota.html`     | Cada nota del cuaderno (`nota.html?n=el-plomo`)               |
 
 ## Qué editar
 
-| Quiero cambiar…                         | Archivo                                    |
-|-----------------------------------------|--------------------------------------------|
-| WhatsApp, Instagram, correo, moneda     | `js/productos.js` → `TIENDA`               |
-| Productos, precios, tallas, fotos       | `js/productos.js` → `PRODUCTOS`            |
-| Textos (portada, nosotros, contacto)    | `index.html`                               |
-| Colores y tipografías                   | `css/styles.css` → bloque `:root`          |
+| Quiero cambiar…                                         | Archivo              |
+|---------------------------------------------------------|----------------------|
+| Abrir la venta, WhatsApp, Instagram, fecha del drop     | `js/productos.js` → `TIENDA` |
+| Prendas, precios, colores, tallas, hora, fotos          | `js/productos.js` → `PRODUCTOS` |
+| Portada, la semana, recomendaciones, lo que suena       | `js/contenido.js`    |
+| Notas del cuaderno                                      | `js/contenido.js` → `NOTAS` |
+| Club, anfitriona del mes, La mesa                       | `js/contenido.js`    |
+| Colores y tipografía                                    | `css/styles.css` → bloque `:root` |
 
-### Agregar fotos de productos
+### Abrir la venta (el día del drop)
 
-1. Sube la foto a `img/productos/` (de preferencia vertical, 3:4, por ejemplo 900×1200 px, en `.jpg` o `.webp`).
-2. En `js/productos.js` escribe la ruta en el campo `imagen`, por ejemplo:
+En `js/productos.js` cambia `ventaAbierta: false` por `ventaAbierta: true` y escribe el número en `whatsapp`. Se activan "Agregar a la cuenta", La cuenta (la boleta) y el pedido por WhatsApp.
+
+Mientras `whatsapp` e `instagram` estén vacíos, no aparece ningún botón que dependa de ellos.
+
+### Poner una foto
+
+1. Sube la foto a `img/` (por ejemplo `img/productos/medianoche-frontal.jpg`).
+2. Busca el recuadro en `js/productos.js` o `js/contenido.js` y escribe la ruta en `src`:
    ```js
-   imagen: "img/productos/playera-negra.jpg",
+   { src: "img/productos/medianoche-frontal.jpg", tono: "claro", alt: "Top Medianoche sobre fondo de papel gris…" },
    ```
+3. Deja el `alt`: describe la foto para quien usa lector de pantalla.
 
-Si `imagen` está vacía, se muestra un recuadro del color indicado en `tono`.
+Fotos de producto: fondo de papel gris claro, flash parejo. Fotos de campaña: la ciudad, la mesa, el cerro, atardecer naranjo o flash de noche. Nunca se mezclan en el mismo espacio.
 
-### Agregar un producto
+### Agregar una nota
 
-Copia uno de los bloques `{ ... }` dentro de `PRODUCTOS`, pégalo y cambia los datos. El `id` debe ser único (sin espacios ni acentos).
+Copia un bloque `{ … }` dentro de `NOTAS`, cambia el `id` (sin espacios ni tildes) y los textos. El `pilar` crea el filtro solo.
 
-## Cómo funcionan los pedidos
+## Ver la página en tu computador
 
-El cliente agrega prendas a su bolsa y presiona **Enviar pedido por WhatsApp**: se abre WhatsApp con el pedido ya escrito (prendas, tallas, cantidades y total) dirigido al número en `TIENDA.whatsapp`. Tú confirmas disponibilidad, envío y forma de pago por ahí.
-
-## Verla en tu computadora
-
-Abre `index.html` con doble clic, o desde esta carpeta ejecuta:
+Desde esta carpeta:
 
 ```bash
 python3 -m http.server 8000

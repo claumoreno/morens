@@ -1,133 +1,104 @@
 <!doctype html>
-<html lang="es">
+<html lang="es-CL">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MORENS — Chic with an edge</title>
-  <meta name="description" content="MORENS: chic with an edge. Siluetas limpias, materiales con brillo y un detalle que rompe las reglas. Pide por WhatsApp.">
-  <meta property="og:title" content="MORENS — Chic with an edge">
-  <meta property="og:description" content="Siluetas limpias, materiales con brillo y un detalle que rompe las reglas.">
-  <meta name="theme-color" content="#141110">
+  <title>MORENS · Santiago de Chile</title>
+  <meta name="description" content="MORENS, Santiago de Chile. Cápsula 01 · Hora Ámbar, el jueves 22 de abril a las 19:00. Mientras tanto, la semana en Santiago, recomendaciones y el Club MORENS.">
+  <meta property="og:title" content="MORENS · Santiago de Chile">
+  <meta property="og:description" content="Cápsula 01 · Hora Ámbar. Jueves 22 de abril, 19:00.">
+  <meta name="theme-color" content="#FFFFFF">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400;1,6..96,500&family=Inter+Tight:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..700&family=IBM+Plex+Mono:wght@400;500&family=Inter+Tight:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
-  <div class="anuncio">Envíos a todo el país <span class="sep">/</span> Pedidos por WhatsApp</div>
+<body data-pagina="inicio">
+  <a class="saltar" href="#contenido">Ir al contenido</a>
+  <div data-cabecera></div>
 
-  <header class="header">
-    <div class="contenedor header__fila">
-      <button class="icon-btn menu-btn" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav">
-        <span></span><span></span>
-      </button>
-      <nav id="nav" class="nav">
-        <a href="#coleccion">Colección</a>
-        <a href="#nosotros">Nosotros</a>
-        <a href="#contacto">Contacto</a>
-      </nav>
-      <a href="#inicio" class="logo">MORENS</a>
-      <button class="bolsa-btn" aria-label="Abrir bolsa de compra">
-        Bolsa <span class="bolsa-btn__num">[<span data-num-bolsa>0</span>]</span>
-      </button>
-    </div>
-  </header>
+  <main id="contenido">
+    <!-- Portada -->
+    <section class="portada contenedor" aria-label="Cápsula 01 · Hora Ámbar">
+      <div class="portada__fotos" data-portada-fotos></div>
+      <div class="portada__texto" data-portada-texto></div>
+      <span data-cordillera="cordillera--portada"></span>
+    </section>
 
-  <main>
-    <section id="inicio" class="hero">
-      <div class="hero__luz" aria-hidden="true"></div>
-      <div class="contenedor hero__contenido">
-        <p class="rotulo">Colección 01 <span class="sep">/</span> Otoño–Invierno 2026</p>
-        <h1 class="lema">
-          <span class="lema__linea">Chic</span>
-          <span class="lema__linea"><small>with an</small> <em>edge.</em></span>
-        </h1>
-        <div class="hero__pie">
-          <p>Siluetas limpias, materiales con brillo y un detalle que rompe las reglas. Para quien entra a un lugar y no necesita decir nada.</p>
-          <a href="#coleccion" class="btn btn--claro">Ver colección</a>
-        </div>
+    <!-- 01 · La cápsula -->
+    <section id="capsula" class="seccion contenedor" aria-labelledby="t-capsula">
+      <div class="seccion__cabecera">
+        <h2 id="t-capsula">01 · La cápsula</h2>
+        <span class="mono" data-capsula-estado></span>
+      </div>
+      <div class="grid-3" data-capsula></div>
+    </section>
+
+    <!-- 02 · La semana -->
+    <section id="semana" class="seccion contenedor" aria-labelledby="t-semana">
+      <div class="seccion__cabecera">
+        <h2 id="t-semana">02 · La semana</h2>
+        <span class="mono">qué hacer en Santiago</span>
+      </div>
+      <div class="semana">
+        <p class="frase">Una semana en Santiago, de la pega al cerro.</p>
+        <ol class="agenda agenda--semana" data-semana></ol>
       </div>
     </section>
 
-    <div class="cinta" aria-hidden="true">
-      <div class="cinta__pista">
-        <span>Chic with an edge</span><span>MORENS</span><span>Chic with an edge</span><span>MORENS</span>
-        <span>Chic with an edge</span><span>MORENS</span><span>Chic with an edge</span><span>MORENS</span>
+    <!-- 03 · Gusto adquirido -->
+    <section id="gusto" class="seccion contenedor" aria-labelledby="t-gusto">
+      <div class="seccion__cabecera">
+        <h2 id="t-gusto">03 · Gusto adquirido</h2>
+        <span class="mono">lo que recomendamos este mes</span>
       </div>
-    </div>
-
-    <section id="coleccion" class="seccion seccion--clara">
-      <div class="contenedor">
-        <div class="seccion__cabecera">
-          <div>
-            <p class="rotulo">Colección 01</p>
-            <h2>Lo <em>nuevo</em></h2>
-          </div>
-          <div class="filtros" role="tablist" aria-label="Filtrar por categoría" data-filtros></div>
-        </div>
-        <div class="grid-productos" data-productos></div>
-      </div>
+      <div class="grid-3" data-recomendaciones></div>
+      <div class="playlist" data-playlist></div>
     </section>
 
-    <section id="nosotros" class="seccion seccion--oscura">
-      <div class="contenedor nosotros">
-        <div>
-          <p class="rotulo">Nosotros</p>
-          <p class="nosotros__cita">Elegante, <em>sí.</em><br>Predecible, <em>nunca.</em></p>
-        </div>
-        <div class="nosotros__cuerpo">
-          <p>Escribe aquí la historia de tu marca: cómo empezó, qué te inspira y qué la hace diferente. MORENS es para quien combina la piel con el encaje, el denim con la cadena dorada, una copa de vino con una tarde sin prisa.</p>
-          <ol class="valores">
-            <li><span>01</span><strong>Materiales con presencia</strong><em>Piel, satín y denim que se sienten antes de verse.</em></li>
-            <li><span>02</span><strong>Series cortas</strong><em>Pocas piezas, para que nadie llegue vestida igual.</em></li>
-            <li><span>03</span><strong>El detalle que incomoda</strong><em>Una cadena, un corte, un brillo fuera de lugar. A propósito.</em></li>
-          </ol>
-        </div>
+    <!-- 04 · El cuaderno -->
+    <section id="cuaderno" class="seccion contenedor" aria-labelledby="t-cuaderno">
+      <div class="seccion__cabecera">
+        <h2 id="t-cuaderno">04 · El cuaderno</h2>
+        <span class="mono">ciudad, cordillera, cultura, ambición</span>
       </div>
+      <div class="filtros" role="group" aria-label="Filtrar notas por tema" data-filtros></div>
+      <div class="grid-3" data-notas aria-live="polite"></div>
     </section>
 
-    <section id="contacto" class="seccion seccion--olivo">
-      <div class="contenedor contacto">
-        <p class="rotulo">Contacto</p>
-        <h2>Escríbenos. <em>Sin rodeos.</em></h2>
-        <p class="contacto__texto">Pedidos, tallas o un consejo de estilo. Te contestamos nosotras, no un robot.</p>
-        <div class="contacto__links">
-          <a class="btn btn--claro" data-link-whatsapp target="_blank" rel="noopener">WhatsApp</a>
-          <a class="btn btn--linea-clara" data-link-instagram target="_blank" rel="noopener">Instagram</a>
-          <a class="btn btn--linea-clara" data-link-correo>Correo</a>
-        </div>
+    <!-- 05 · Club MORENS -->
+    <section id="club" class="seccion contenedor" aria-labelledby="t-club">
+      <div class="seccion__cabecera">
+        <h2 id="t-club">05 · Club MORENS</h2>
+        <span class="mono">un encuentro al mes</span>
       </div>
+      <div class="club" data-club></div>
+    </section>
+
+    <!-- 06 · Mujeres que hacen -->
+    <section id="mujeres" class="seccion contenedor" aria-labelledby="t-mujeres">
+      <div class="seccion__cabecera">
+        <h2 id="t-mujeres">06 · Mujeres que hacen</h2>
+        <span class="mono">tres preguntas al mes</span>
+      </div>
+      <div class="anfitriona" data-anfitriona></div>
+    </section>
+
+    <!-- La idea, una sola vez -->
+    <section class="cierre contenedor" aria-label="Gusto adquirido">
+      <p>El gusto no se hereda. <span>Se sale a buscar.</span></p>
+    </section>
+
+    <!-- La mesa -->
+    <section id="la-mesa" class="contenedor">
+      <div class="la-mesa" data-la-mesa></div>
     </section>
   </main>
 
-  <footer class="footer">
-    <div class="contenedor">
-      <p class="footer__marca">MORENS</p>
-      <div class="footer__fila">
-        <span><em>Chic with an edge.</em></span>
-        <span>© <span data-anio></span> MORENS</span>
-      </div>
-    </div>
-  </footer>
-
-  <!-- Bolsa de compra -->
-  <div class="overlay" data-overlay hidden></div>
-  <aside class="bolsa" aria-label="Bolsa de compra" aria-hidden="true">
-    <div class="bolsa__cabecera">
-      <h3>Tu bolsa</h3>
-      <button class="icon-btn cerrar-btn" data-cerrar-bolsa aria-label="Cerrar bolsa">×</button>
-    </div>
-    <div class="bolsa__items" data-bolsa-items></div>
-    <div class="bolsa__pie">
-      <div class="bolsa__total"><span>Total</span><strong data-bolsa-total>$0</strong></div>
-      <button class="btn btn--oscuro btn--ancho" data-enviar-pedido>Enviar pedido por WhatsApp</button>
-      <p class="bolsa__nota">Te confirmamos disponibilidad, envío y forma de pago por WhatsApp.</p>
-    </div>
-  </aside>
-
-  <div class="aviso" role="status" aria-live="polite" data-aviso></div>
+  <div data-pie></div>
 
   <script src="js/productos.js"></script>
+  <script src="js/contenido.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
