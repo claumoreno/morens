@@ -30,10 +30,10 @@ Mientras `whatsapp` e `instagram` estén vacíos, no aparece ningún botón que 
 
 ### Poner una foto
 
-1. Sube la foto a `img/` (por ejemplo `img/productos/medianoche-frontal.jpg`).
+1. Sube la foto a `img/` (por ejemplo `img/productos/ximena-frontal.jpg`).
 2. Busca el recuadro en `js/productos.js` o `js/contenido.js` y escribe la ruta en `src`:
    ```js
-   { src: "img/productos/medianoche-frontal.jpg", tono: "claro", alt: "Top Medianoche sobre fondo de papel gris…" },
+   { src: "img/productos/ximena-frontal.jpg", tono: "claro", alt: "Top Ximena sobre fondo de papel gris…" },
    ```
 3. Deja el `alt`: describe la foto para quien usa lector de pantalla.
 
