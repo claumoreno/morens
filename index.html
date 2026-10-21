@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MORENS · Santiago de Chile</title>
-  <meta name="description" content="MORENS, Santiago de Chile. Cápsula 01 · Hora Ámbar, el jueves 22 de abril a las 19:00. Mientras tanto, la semana en Santiago, recomendaciones y el Club MORENS.">
+  <meta name="description" content="MORENS, Santiago de Chile. Cápsula 01 · Hora Ámbar, el jueves 22 de abril a las 19:00. Mientras tanto: qué hacer en Santiago, cerros, cultura, restaurantes y el Club MORENS.">
   <meta property="og:title" content="MORENS · Santiago de Chile">
   <meta property="og:description" content="Cápsula 01 · Hora Ámbar. Jueves 22 de abril, 19:00.">
   <meta name="theme-color" content="#FFFFFF">
@@ -25,13 +25,13 @@
       <span data-cordillera="cordillera--portada"></span>
     </section>
 
-    <!-- 01 · La cápsula -->
-    <section id="capsula" class="seccion contenedor" aria-labelledby="t-capsula">
+    <!-- 01 · Cápsulas -->
+    <section id="capsulas" class="seccion contenedor" aria-labelledby="t-capsulas">
       <div class="seccion__cabecera">
-        <h2 id="t-capsula">01 · La cápsula</h2>
-        <span class="mono" data-capsula-estado></span>
+        <h2 id="t-capsulas">01 · Cápsulas</h2>
+        <span class="mono">pocas piezas, series cortas</span>
       </div>
-      <div class="grid-3" data-capsula></div>
+      <div data-capsulas></div>
     </section>
 
     <!-- 02 · La semana -->
@@ -46,31 +46,32 @@
       </div>
     </section>
 
-    <!-- 03 · Gusto adquirido -->
-    <section id="gusto" class="seccion contenedor" aria-labelledby="t-gusto">
+    <!-- 03 · El dato -->
+    <section id="el-dato" class="seccion contenedor" aria-labelledby="t-dato">
       <div class="seccion__cabecera">
-        <h2 id="t-gusto">03 · Gusto adquirido</h2>
-        <span class="mono">lo que recomendamos este mes</span>
+        <h2 id="t-dato">03 · El dato</h2>
+        <span class="mono">lo que estamos escuchando, leyendo y visitando</span>
       </div>
-      <div class="grid-3" data-recomendaciones></div>
+      <div class="grid-3" data-dato></div>
       <div class="playlist" data-playlist></div>
     </section>
 
-    <!-- 04 · El cuaderno -->
-    <section id="cuaderno" class="seccion contenedor" aria-labelledby="t-cuaderno">
+    <!-- 04 · Apuntes -->
+    <section id="apuntes" class="seccion contenedor" aria-labelledby="t-apuntes">
       <div class="seccion__cabecera">
-        <h2 id="t-cuaderno">04 · El cuaderno</h2>
-        <span class="mono">ciudad, cerros, cultura, trabajo</span>
+        <h2 id="t-apuntes">04 · Apuntes</h2>
+        <span class="mono">cerros, ciudad, cultura, trabajo, restaurantes, tendencias</span>
       </div>
-      <div class="filtros" role="group" aria-label="Filtrar notas por tema" data-filtros></div>
+      <div class="filtros" role="group" aria-label="Filtrar apuntes por tema" data-filtros></div>
       <div class="grid-3" data-notas aria-live="polite"></div>
+      <button class="btn btn--linea ver-mas" type="button" data-ver-mas hidden>Ver más apuntes</button>
     </section>
 
     <!-- 05 · Club MORENS -->
     <section id="club" class="seccion contenedor" aria-labelledby="t-club">
       <div class="seccion__cabecera">
         <h2 id="t-club">05 · Club MORENS</h2>
-        <span class="mono">un encuentro al mes</span>
+        <span class="mono">moverse, aprender, conocer gente</span>
       </div>
       <div class="club" data-club></div>
     </section>
@@ -84,13 +85,8 @@
       <div class="anfitriona" data-anfitriona></div>
     </section>
 
-    <!-- La idea, una sola vez -->
-    <section class="cierre contenedor" aria-label="Gusto adquirido">
-      <p>El gusto no se hereda. <span>Se sale a buscar.</span></p>
-    </section>
-
     <!-- La mesa -->
-    <section id="la-mesa" class="contenedor">
+    <section id="la-mesa" class="contenedor la-mesa-seccion">
       <div class="la-mesa" data-la-mesa></div>
     </section>
   </main>

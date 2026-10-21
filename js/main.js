@@ -14,18 +14,24 @@
   const precio = (n) => formato.format(n);
   const buscarProducto = (id) => PRODUCTOS.find((p) => p.id === id);
   const buscarNota = (id) => NOTAS.find((n) => n.id === id);
+  const buscarCapsula = (id) => CAPSULAS.find((c) => c.id === id);
+  const seVende = (p) => TIENDA.ventaAbierta && buscarCapsula(p.capsula).abierta && !p.agotado;
   const linkWhatsapp = (texto) => `https://wa.me/${TIENDA.whatsapp}?text=${encodeURIComponent(texto)}`;
 
   // ---------- Piezas de sistema ----------
 
-  // Foto real o recuadro de color con la descripción de la foto que va ahí
+  // Foto real o recuadro de color con la descripción de la foto que va ahí.
+  // Si la foto no carga, se quita y queda el recuadro.
   function foto(f, clase = "") {
+    const desc = `<span class="foto__desc" aria-hidden="true">Foto · ${esc(f.alt)}</span>`;
     if (f.src) {
-      return `<div class="foto ${clase}"><img src="${esc(f.src)}" alt="${esc(f.alt)}" loading="lazy"></div>`;
+      return `<div class="foto foto--${f.tono} ${clase}">${desc}<img src="${esc(f.src)}" alt="${esc(f.alt)}" loading="lazy" onerror="this.remove()"></div>`;
     }
-    return `<div class="foto foto--${f.tono} ${clase}" role="img" aria-label="${esc(f.alt)}">
-      <span class="foto__desc" aria-hidden="true">Foto · ${esc(f.alt)}</span></div>`;
+    return `<div class="foto foto--${f.tono} ${clase}" role="img" aria-label="${esc(f.alt)}">${desc}</div>`;
   }
+
+  const credito = (f) =>
+    f.credito ? `<p class="credito">Foto: <a href="${esc(f.fuente)}" target="_blank" rel="noopener">${esc(f.credito)}</a></p>` : "";
 
   // La línea de la cordillera vista desde Santiago, en un solo trazo. El punto más alto es El Plomo.
   const CORDILLERA =
@@ -60,9 +66,9 @@
         <div class="contenedor cabecera__fila">
           <button class="menu-btn" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav"><span></span><span></span></button>
           <nav id="nav" class="nav" aria-label="Principal">
-            <a href="${ancla("capsula")}">Cápsula 01</a>
+            <a href="${ancla("capsulas")}">Cápsulas</a>
             <a href="${ancla("semana")}">La semana</a>
-            <a href="${ancla("cuaderno")}">Cuaderno</a>
+            <a href="${ancla("apuntes")}">Apuntes</a>
             <a href="${ancla("club")}">Club</a>
             <a class="nav__movil" href="${ancla("la-mesa")}">La mesa</a>
           </nav>
@@ -94,6 +100,9 @@
     const ig = TIENDA.instagram
       ? `<a href="https://instagram.com/${esc(TIENDA.instagram)}" target="_blank" rel="noopener">Instagram</a>`
       : "";
+    // Créditos de todas las fotos de terceros que se usan en el sitio
+    const fotos = [...NOTAS.map((n) => n.foto), CLUB.foto].filter((f) => f.credito);
+    const unicos = [...new Map(fotos.map((f) => [f.fuente, f])).values()];
     destino.outerHTML = `
       <footer class="pie">
         <div class="contenedor">
@@ -104,6 +113,10 @@
             ${ig}
             <span>© ${new Date().getFullYear()}</span>
           </div>
+          <details class="creditos">
+            <summary>Créditos de las fotos</summary>
+            <ul>${unicos.map((f) => `<li><a href="${esc(f.fuente)}" target="_blank" rel="noopener">${esc(f.credito)}</a></li>`).join("")}</ul>
+          </details>
         </div>
       </footer>`;
   }
@@ -270,24 +283,34 @@
 
   function inicio() {
     // Portada
+    const c01 = CAPSULAS[0];
     $("[data-portada-fotos]").innerHTML =
       foto(PORTADA.fotos[0], "portada__principal") + foto(PORTADA.fotos[1], "portada__detalle") + foto(PORTADA.fotos[2], "portada__atardecer");
     $("[data-portada-texto]").innerHTML = `
       <div>
-        <p class="mono etiqueta">${esc(PORTADA.capsula)}</p>
-        <h1 class="portada__titulo">${esc(PORTADA.nombre)}</h1>
+        <p class="mono etiqueta">Cápsula ${esc(c01.id)}</p>
+        <h1 class="portada__titulo">${esc(c01.nombre)}</h1>
       </div>
       <div class="portada__accion">
         <p>${esc(PORTADA.bajada)}</p>
-        <a class="btn" href="#capsula">Ver la cápsula</a>
+        <a class="btn" href="#capsulas">Ver la cápsula</a>
       </div>`;
     $$("[data-cordillera]").forEach((el) => (el.outerHTML = cordillera(el.dataset.cordillera)));
 
-    // 01 · La cápsula
-    $("[data-capsula-estado]").textContent = TIENDA.ventaAbierta
-      ? `${PRODUCTOS.length} piezas · series de 30`
-      : TIENDA.drop.largo;
-    $("[data-capsula]").innerHTML = PRODUCTOS.map(tarjetaProducto).join("");
+    // 01 · Cápsulas
+    $("[data-capsulas]").innerHTML = CAPSULAS.map(
+      (c) => `
+      <div class="capsula">
+        <div class="capsula__cabecera">
+          <div>
+            <h3>Cápsula ${esc(c.id)} · ${esc(c.nombre)}</h3>
+            <p>${esc(c.bajada)}</p>
+          </div>
+          <p class="mono capsula__estado">${esc(c.temporada)} · ${esc(c.estado)}</p>
+        </div>
+        <div class="grid-3 carrusel">${PRODUCTOS.filter((p) => p.capsula === c.id).map(tarjetaProducto).join("")}</div>
+      </div>`
+    ).join("");
 
     // 02 · La semana
     $("[data-semana]").innerHTML = SEMANA.map((s) => {
@@ -295,30 +318,43 @@
       return `<li><span class="mono">${esc(s.dia)} ${esc(s.hora)}</span><span>${texto}${s.lugar ? `<span class="agenda__lugar mono">${esc(s.lugar)}</span>` : ""}</span></li>`;
     }).join("");
 
-    // 03 · Gusto adquirido
-    $("[data-recomendaciones]").innerHTML = RECOMENDACIONES.map((r) => tarjetaNota(buscarNota(r.nota), r.etiqueta)).join("");
+    // 03 · El dato
+    $("[data-dato]").innerHTML = EL_DATO.map((r) => tarjetaNota(buscarNota(r.nota), r.etiqueta)).join("");
     $("[data-playlist]").innerHTML = `
       <div class="playlist__cabecera"><h3>${esc(PLAYLIST.titulo)}</h3><span class="mono">${esc(PLAYLIST.bajada)}</span></div>
       <ol>${PLAYLIST.temas
         .map((t, i) => `<li><span class="mono">${String(i + 1).padStart(2, "0")}</span><span lang="en">${esc(t.tema)}</span><span class="playlist__artista">${esc(t.artista)}</span></li>`)
         .join("")}</ol>`;
 
-    // 04 · El cuaderno, con filtro por pilar
-    const pilares = ["Todo", ...new Set(NOTAS.map((n) => n.pilar))];
+    // 04 · Apuntes, con filtro por tema y "ver más"
+    const ORDEN = ["Cerros", "Ciudad", "Cultura", "Trabajo", "Restaurantes", "Tendencias"];
+    const existentes = new Set(NOTAS.map((n) => n.pilar));
+    const pilares = ["Todo", ...ORDEN.filter((p) => existentes.has(p)), ...[...existentes].filter((p) => !ORDEN.includes(p))];
+    const POR_PAGINA = 9;
     let filtro = "Todo";
+    let visibles = POR_PAGINA;
     const pintarFiltros = () =>
       ($("[data-filtros]").innerHTML = pilares
-        .map((p) => `<button type="button" aria-pressed="${p === filtro}" data-pilar="${esc(p)}">${esc(p)}</button>`)
+        .map((p) => {
+          const n = p === "Todo" ? NOTAS.length : NOTAS.filter((x) => x.pilar === p).length;
+          return `<button type="button" aria-pressed="${p === filtro}" data-pilar="${esc(p)}">${esc(p)} <span>${n}</span></button>`;
+        })
         .join(""));
-    const pintarNotas = () =>
-      ($("[data-notas]").innerHTML = NOTAS.filter((n) => filtro === "Todo" || n.pilar === filtro)
-        .map((n) => tarjetaNota(n))
-        .join(""));
+    const pintarNotas = () => {
+      const lista = NOTAS.filter((n) => filtro === "Todo" || n.pilar === filtro);
+      $("[data-notas]").innerHTML = lista.slice(0, visibles).map((n) => tarjetaNota(n)).join("");
+      $("[data-ver-mas]").hidden = lista.length <= visibles;
+    };
     $("[data-filtros]").addEventListener("click", (e) => {
       const btn = e.target.closest("[data-pilar]");
       if (!btn) return;
       filtro = btn.dataset.pilar;
+      visibles = POR_PAGINA;
       pintarFiltros();
+      pintarNotas();
+    });
+    $("[data-ver-mas]").addEventListener("click", () => {
+      visibles += POR_PAGINA;
       pintarNotas();
     });
     pintarFiltros();
@@ -329,14 +365,22 @@
       ? `<a class="btn btn--linea" href="${linkWhatsapp("Hola MORENS. Quiero ir al próximo encuentro del club.")}" target="_blank" rel="noopener">Quiero ir</a>`
       : `<p class="mono estado">${esc(CLUB.estado)}</p>`;
     $("[data-club]").innerHTML = `
-      ${foto(CLUB.foto, "club__foto")}
-      <div class="club__texto">
-        <p class="frase">${esc(CLUB.frase)}</p>
-        <ul class="agenda">${CLUB.encuentros
-          .map((e) => `<li><span class="mono">${esc(e.fecha)}<br>${esc(e.hora)}</span><span>${esc(e.texto)}</span></li>`)
-          .join("")}</ul>
-        <p class="club__detalle">${esc(CLUB.detalle)}</p>
-        ${quieroIr}
+      <p class="frase club__frase">${esc(CLUB.frase)}</p>
+      <ol class="club__pilares">${CLUB.pilares
+        .map((p, i) => `<li><span class="mono">${String(i + 1).padStart(2, "0")}</span><h3>${esc(p.nombre)}</h3><p>${esc(p.texto)}</p></li>`)
+        .join("")}</ol>
+      <div class="club__cuerpo">
+        <div>${foto(CLUB.foto, "club__foto")}${credito(CLUB.foto)}</div>
+        <div class="club__texto">
+          <h3 class="club__subtitulo">Próximos encuentros</h3>
+          <ul class="agenda">${CLUB.encuentros
+            .map(
+              (e) => `<li><span class="mono">${esc(e.fecha)}<br>${esc(e.hora)}</span><span>${esc(e.texto)}<span class="agenda__lugar mono">${esc(e.pilar)}</span></span></li>`
+            )
+            .join("")}</ul>
+          <p class="club__detalle">${esc(CLUB.detalle)}</p>
+          ${quieroIr}
+        </div>
       </div>`;
 
     // 06 · Mujeres que hacen
@@ -377,9 +421,10 @@
     const p = buscarProducto(new URLSearchParams(location.search).get("p"));
     const destino = $("[data-ficha]");
     if (!p) {
-      destino.innerHTML = `<p class="vacio">Esta pieza no existe. <a href="index.html#capsula">Ver la cápsula</a></p>`;
+      destino.innerHTML = `<p class="vacio">Esta pieza no existe. <a href="index.html#capsulas">Ver las cápsulas</a></p>`;
       return;
     }
+    const cap = buscarCapsula(p.capsula);
     document.title = `${p.nombre} · MORENS`;
     let color = p.colores[0].nombre;
     let talla = p.tallas.length === 1 ? p.tallas[0] : null;
@@ -388,18 +433,23 @@
     const principal = p.fotos[1] || p.fotos[0];
     const resto = p.fotos.filter((f) => f !== principal);
 
-    const acciones = TIENDA.ventaAbierta
-      ? p.agotado
-        ? `<button class="btn btn--ancho" type="button" disabled>Se fue. La próxima ronda viene pronto.</button>`
-        : `<button class="btn btn--ancho" type="button" data-agregar>Agregar a la cuenta</button>`
-      : `<button class="btn btn--ancho" type="button" disabled>${esc(TIENDA.drop.largo)}</button>
+    let acciones;
+    if (seVende(p)) {
+      acciones = `<button class="btn btn--ancho" type="button" data-agregar>Agregar a la cuenta</button>`;
+    } else if (p.agotado) {
+      acciones = `<button class="btn btn--ancho" type="button" disabled>Se fue. La próxima ronda viene pronto.</button>`;
+    } else if (cap.abierta) {
+      acciones = `<button class="btn btn--ancho" type="button" disabled>${esc(TIENDA.drop.largo)}</button>
          <p class="ficha__aviso">${esc(TIENDA.drop.lista)}. <a href="index.html#la-mesa">Qué es La mesa</a></p>`;
+    } else {
+      acciones = `<button class="btn btn--ancho" type="button" disabled>${esc(cap.estado)} · ${esc(cap.temporada.toLowerCase())}</button>`;
+    }
     const preguntar = TIENDA.whatsapp
       ? `<a class="btn btn--linea btn--ancho" href="${linkWhatsapp(`Hola MORENS. Tengo una pregunta sobre el ${p.nombre}.`)}" target="_blank" rel="noopener">Preguntar por WhatsApp</a>`
       : "";
 
     destino.innerHTML = `
-      <p class="mono migas"><a href="index.html#capsula">Cápsula 01 · Hora Ámbar</a> / ${esc(p.nombre)}</p>
+      <p class="mono migas"><a href="index.html#capsulas">Cápsula ${esc(cap.id)} · ${esc(cap.nombre)}</a> / ${esc(p.nombre)}</p>
       <div class="ficha">
         <div class="ficha__fotos">
           ${foto(principal, "ficha__principal")}
@@ -473,13 +523,13 @@
     });
   }
 
-  // ---------- Nota ----------
+  // ---------- Apunte ----------
 
   function nota() {
     const n = buscarNota(new URLSearchParams(location.search).get("n"));
     const destino = $("[data-nota]");
     if (!n) {
-      destino.innerHTML = `<p class="vacio">Esta nota no existe. <a href="index.html#cuaderno">Ver el cuaderno</a></p>`;
+      destino.innerHTML = `<p class="vacio">Este apunte no existe. <a href="index.html#apuntes">Ver los apuntes</a></p>`;
       return;
     }
     document.title = `${n.titulo} · MORENS`;
@@ -487,7 +537,7 @@
       .concat(NOTAS.filter((o) => o.id !== n.id && o.pilar !== n.pilar))
       .slice(0, 3);
     destino.innerHTML = `
-      <p class="mono migas"><a href="index.html#cuaderno">Cuaderno</a> / ${esc(n.pilar)}</p>
+      <p class="mono migas"><a href="index.html#apuntes">Apuntes</a> / ${esc(n.pilar)}</p>
       <article class="articulo">
         <header>
           <p class="mono etiqueta">${esc(n.pilar)} · ${esc(n.sello)}</p>
@@ -495,6 +545,7 @@
           <p class="articulo__bajada">${esc(n.bajada)}</p>
         </header>
         ${foto(n.foto, "articulo__foto")}
+        ${credito(n.foto)}
         <div class="articulo__cuerpo">${n.cuerpo.map((p) => `<p>${esc(p)}</p>`).join("")}</div>
       </article>
       <section class="seccion seccion--corta" aria-labelledby="otras">

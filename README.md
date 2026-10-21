@@ -6,18 +6,19 @@ Página estática (HTML, CSS y JavaScript, sin instalar nada) publicada con GitH
 
 | Archivo         | Qué es                                                        |
 |-----------------|---------------------------------------------------------------|
-| `index.html`    | Inicio: portada, la cápsula, la semana, gusto adquirido, el cuaderno, club, mujeres que hacen y La mesa |
-| `producto.html` | Ficha de cada prenda (`producto.html?p=top-medianoche`)       |
-| `nota.html`     | Cada nota del cuaderno (`nota.html?n=el-plomo`)               |
+| `index.html`    | Inicio: portada, cápsulas, la semana, el dato, apuntes, club, mujeres que hacen y La mesa |
+| `producto.html` | Ficha de cada prenda (`producto.html?p=top-ximena`)           |
+| `nota.html`     | Cada apunte (`nota.html?n=quebrada-de-macul`)                 |
 
 ## Qué editar
 
 | Quiero cambiar…                                         | Archivo              |
 |---------------------------------------------------------|----------------------|
 | Abrir la venta, WhatsApp, Instagram, fecha del drop     | `js/productos.js` → `TIENDA` |
+| Cápsulas (nombre, temporada, si está abierta)           | `js/productos.js` → `CAPSULAS` |
 | Prendas, precios, colores, tallas, hora, fotos          | `js/productos.js` → `PRODUCTOS` |
-| Portada, la semana, recomendaciones, lo que suena       | `js/contenido.js`    |
-| Notas del cuaderno                                      | `js/contenido.js` → `NOTAS` |
+| Portada, la semana, el dato, lo que suena               | `js/contenido.js`    |
+| Apuntes                                                 | `js/contenido.js` → `NOTAS` |
 | Club, anfitriona del mes, La mesa                       | `js/contenido.js`    |
 | Colores y tipografía                                    | `css/styles.css` → bloque `:root` |
 
@@ -36,11 +37,16 @@ Mientras `whatsapp` e `instagram` estén vacíos, no aparece ningún botón que 
    ```
 3. Deja el `alt`: describe la foto para quien usa lector de pantalla.
 
+Para fotos de terceros, `js/contenido.js` tiene dos ayudas que además agregan el crédito:
+`wiki("Archivo.jpg", "Autor", "Licencia", "tono", "alt")` para Wikimedia Commons y
+`unsplash("id", "Autor", "tono", "alt")` para Unsplash. Todos los créditos aparecen al pie de la página.
+Si una foto no carga, se muestra el recuadro de color.
+
 Fotos de producto: fondo de papel gris claro, flash parejo. Fotos de campaña: la ciudad, la mesa, el cerro, atardecer naranjo o flash de noche. Nunca se mezclan en el mismo espacio.
 
-### Agregar una nota
+### Agregar un apunte
 
-Copia un bloque `{ … }` dentro de `NOTAS`, cambia el `id` (sin espacios ni tildes) y los textos. El `pilar` crea el filtro solo.
+Copia un bloque `{ … }` dentro de `NOTAS`, cambia el `id` (sin espacios ni tildes) y los textos. El `pilar` crea el filtro solo (Cerros, Ciudad, Cultura, Trabajo, Restaurantes, Tendencias).
 
 ## Ver la página en tu computador
 

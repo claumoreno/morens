@@ -1,8 +1,8 @@
 /* ============================================================
    MORENS · estilos
    Paleta, tipografía y reglas del libro de marca.
-   El naranjo es acento: líneas, timbres y títulos grandes.
-   Nunca en texto chico.
+   El acento es el olivo: líneas, timbres y títulos grandes.
+   El naranjo queda para las fotos.
    ============================================================ */
 :root {
   --blanco: #FFFFFF;
@@ -10,6 +10,7 @@
   --piedra: #8C8782;    /* líneas y fondos; sobre blanco no alcanza contraste para texto chico */
   --claro: #E6E3DF;
   --naranjo: #D2642A;
+  --acento: var(--olivo);
   --olivo: #4A4A2B;
   --chocolate: #3A2A21;
   --texto-2: #625D58;   /* gris piedra oscurecido para texto secundario legible (6:1 sobre blanco) */
@@ -52,7 +53,7 @@ h1, h2, h3 {
   letter-spacing: -0.01em;
 }
 p { margin: 0; }
-:focus-visible { outline: 2px solid var(--naranjo); outline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--acento); outline-offset: 3px; }
 
 .contenedor { width: 100%; max-width: var(--ancho); margin: 0 auto; padding: 0 var(--margen); }
 
@@ -146,7 +147,7 @@ p { margin: 0; }
   display: flex; align-items: flex-end;
   background: var(--claro); color: var(--negro);
 }
-.foto img { width: 100%; height: 100%; object-fit: cover; }
+.foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .foto__desc {
   display: block; padding: 18px 20px; max-width: 460px;
   font-family: var(--mono); font-size: 11px; line-height: 1.65; letter-spacing: 0.02em;
@@ -160,7 +161,7 @@ p { margin: 0; }
 
 /* ---------- Elementos de sistema ---------- */
 .cordillera { display: block; width: 100%; height: 64px; overflow: visible; }
-.cordillera polyline { fill: none; stroke: var(--naranjo); stroke-width: 1.5; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.cordillera polyline { fill: none; stroke: var(--acento); stroke-width: 1.5; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
 .cordillera--pie polyline { stroke: var(--negro); }
 .cordillera--portada { margin-top: 56px; height: 72px; }
 
@@ -168,7 +169,7 @@ p { margin: 0; }
   position: absolute; top: 14px; right: 14px; z-index: 1;
   display: grid; place-items: center;
   width: 34px; height: 34px; border-radius: 50%;
-  border: 1px solid var(--naranjo); background: var(--blanco);
+  border: 1px solid var(--acento); background: var(--blanco);
   font-family: var(--mono); font-size: 11px; color: var(--negro);
 }
 
@@ -178,7 +179,7 @@ p { margin: 0; }
   border: 1px solid var(--claro);
 }
 .horas li { display: grid; place-items: center; width: 30px; height: 30px; font-family: var(--mono); font-size: 12px; }
-.horas__suya { border: 1px solid var(--naranjo); border-radius: 50%; }
+.horas__suya { border: 1px solid var(--acento); border-radius: 50%; }
 
 /* ---------- Secciones ---------- */
 .seccion { padding: 64px var(--margen) 0; }
@@ -218,14 +219,14 @@ p { margin: 0; }
 
 /* ---------- 01 · La cápsula ---------- */
 @media (max-width: 759px) {
-  [data-capsula] {
+  .carrusel {
     grid-auto-flow: column; grid-auto-columns: 78%;
     overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: var(--margen); gap: 12px;
     margin-inline: calc(var(--margen) * -1); padding: 0 var(--margen) 8px;
     scrollbar-width: none;
   }
-  [data-capsula]::-webkit-scrollbar { display: none; }
-  [data-capsula] > * { scroll-snap-align: start; }
+  .carrusel::-webkit-scrollbar { display: none; }
+  .carrusel > * { scroll-snap-align: start; }
 }
 .producto__link { display: block; text-decoration: none; }
 .producto__img { position: relative; }
@@ -282,10 +283,19 @@ p { margin: 0; }
 .filtros button[aria-pressed="true"] { background: var(--negro); border-color: var(--negro); color: var(--blanco); }
 
 /* ---------- 05 · Club ---------- */
-.club { display: grid; gap: 28px; }
-@media (min-width: 900px) { .club { grid-template-columns: 1.15fr 1fr; gap: 40px; } }
+.club__frase { max-width: 900px; margin-bottom: 32px; }
+.club__pilares { list-style: none; margin: 0 0 48px; padding: 0; display: grid; gap: 0 24px; border-top: 1px solid var(--negro); }
+@media (min-width: 760px) { .club__pilares { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1100px) { .club__pilares { grid-template-columns: repeat(4, 1fr); } }
+.club__pilares li { padding: 18px 0; border-bottom: 1px solid var(--claro); display: grid; gap: 6px; align-content: start; }
+.club__pilares .mono { color: var(--acento); }
+.club__pilares h3 { font-size: 24px; }
+.club__pilares p { color: var(--texto-2); font-size: 15px; }
+.club__cuerpo { display: grid; gap: 28px; }
+@media (min-width: 900px) { .club__cuerpo { grid-template-columns: 1fr 1.15fr; gap: 40px; } }
 .club__foto { aspect-ratio: 4 / 3; }
-.club__texto { display: grid; gap: 22px; align-content: start; }
+.club__subtitulo { font-size: 24px; }
+.club__texto { display: grid; gap: 18px; align-content: start; }
 .club__detalle { color: var(--texto-2); font-size: 15px; }
 .club__texto .btn { justify-self: start; }
 
@@ -302,13 +312,29 @@ p { margin: 0; }
 .anfitriona dd { margin: 0; color: var(--texto-2); }
 .anfitriona .estado { margin: 8px 0 0; max-width: none; }
 
-/* ---------- Cierre ---------- */
-.cierre { padding-top: 104px; padding-bottom: 72px; }
-.cierre p {
-  font-family: var(--titulo); font-stretch: 75%; font-weight: 600;
-  font-size: clamp(44px, 7.5vw, 112px); line-height: 0.95; letter-spacing: -0.02em; max-width: 1100px;
-}
-.cierre span { color: var(--naranjo); }
+/* ---------- Cápsulas ---------- */
+.capsula + .capsula { margin-top: 64px; }
+.capsula__cabecera { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 8px 24px; margin-bottom: 20px; }
+.capsula__cabecera h3 { font-size: clamp(26px, 3vw, 34px); font-weight: 700; }
+.capsula__cabecera p:not(.mono) { color: var(--texto-2); margin-top: 6px; max-width: 560px; }
+.capsula__estado { text-transform: uppercase; letter-spacing: 0.1em; font-size: 11px; color: var(--texto-2); }
+
+/* ---------- Apuntes ---------- */
+.filtros button span { color: var(--texto-2); margin-left: 4px; }
+.filtros button[aria-pressed="true"] span { color: var(--claro); }
+.ver-mas { display: flex; margin: 40px auto 0; }
+.ver-mas[hidden] { display: none; }
+
+/* ---------- Créditos de fotos ---------- */
+.credito { margin-top: 8px; font-family: var(--mono); font-size: 11px; color: var(--texto-2); }
+.credito a { text-underline-offset: 3px; }
+.creditos { margin-top: 16px; font-family: var(--mono); font-size: 11px; color: var(--texto-2); }
+.creditos summary { cursor: pointer; padding: 6px 0; }
+.creditos ul { list-style: none; margin: 8px 0 0; padding: 0; columns: 2 260px; column-gap: 32px; }
+.creditos li { padding: 3px 0; break-inside: avoid; }
+.creditos a { text-underline-offset: 3px; }
+
+.la-mesa-seccion { padding-top: 104px; }
 
 /* ---------- La mesa y la boleta ---------- */
 .la-mesa {
@@ -341,7 +367,7 @@ p { margin: 0; }
 .boleta__gracias { text-align: center; margin-top: 18px; }
 .sello-hora {
   position: absolute; top: 58px; right: 16px;
-  padding: 2px 6px; border: 1px solid var(--naranjo);
+  padding: 2px 6px; border: 1px solid var(--acento);
   transform: rotate(-7deg); background: var(--blanco);
   font-family: var(--mono); font-size: 12px; color: var(--negro);
 }
