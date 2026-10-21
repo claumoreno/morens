@@ -292,7 +292,7 @@
     // 02 · La semana
     $("[data-semana]").innerHTML = SEMANA.map((s) => {
       const texto = s.nota ? `<a href="nota.html?n=${s.nota}">${esc(s.texto)}</a>` : esc(s.texto);
-      return `<li><span class="mono">${esc(s.dia)} ${esc(s.hora)}</span><span>${texto}</span></li>`;
+      return `<li><span class="mono">${esc(s.dia)} ${esc(s.hora)}</span><span>${texto}${s.lugar ? `<span class="agenda__lugar mono">${esc(s.lugar)}</span>` : ""}</span></li>`;
     }).join("");
 
     // 03 · Gusto adquirido

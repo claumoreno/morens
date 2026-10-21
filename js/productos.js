@@ -44,7 +44,7 @@ const PRODUCTOS = [
     precio: 34990,
     hora: "00",
     resumen: "Satín, espalda abierta",
-    descripcion: "Satín negro, espalda abierta hasta la cintura, tirantes finos regulables. Para cuando te sacas el blazer.",
+    descripcion: "Camisola de satín con la espalda abierta hasta la cintura y tirantes finos regulables. Se puede usar debajo de un blazer en la oficina o sola en la noche.",
     colores: [
       { nombre: "Negro", hex: "#121110" },
       { nombre: "Chocolate", hex: "#3A2A21" },
@@ -56,7 +56,7 @@ const PRODUCTOS = [
     seLlevaCon: "la-cinta",
     fotos: [
       { src: "", tono: "claro", alt: "Top Medianoche sobre fondo de papel gris, cuerpo completo, de espaldas" },
-      { src: "", tono: "chocolate", alt: "De espaldas en una barra de madera, la espalda abierta del top, aros de plata" },
+      { src: "", tono: "chocolate", alt: "Mujer de espaldas en una barra de madera, con la espalda abierta del top y aros de plata" },
       { src: "", tono: "claro", alt: "Detalle del satín y el tirante" },
     ],
   },
@@ -66,7 +66,7 @@ const PRODUCTOS = [
     precio: 29990,
     hora: "21",
     resumen: "Camisola con encaje",
-    descripcion: "Camisola con borde de encaje suave y terminado. Va debajo del blazer a las 8:30 y sola a las 21:00.",
+    descripcion: "Camisola con borde de encaje suave. Combina con jeans anchos o con pantalón de tela.",
     colores: [
       { nombre: "Negro", hex: "#121110" },
       { nombre: "Crema", hex: "#EFE9DF" },
@@ -78,7 +78,7 @@ const PRODUCTOS = [
     seLlevaCon: "la-cinta",
     fotos: [
       { src: "", tono: "claro", alt: "Top Lastarria de frente sobre fondo de papel gris, borde de encaje en detalle" },
-      { src: "", tono: "piedra", alt: "Una fachada de Lastarria al atardecer, ella cruza la calle con el top bajo un blazer abierto" },
+      { src: "", tono: "piedra", alt: "Mujer cruzando una calle de Lastarria al atardecer, con el top debajo de un blazer abierto" },
       { src: "", tono: "claro", alt: "Detalle del borde de encaje" },
     ],
   },
@@ -88,7 +88,7 @@ const PRODUCTOS = [
     precio: 9990,
     hora: "19",
     resumen: "Satín para el pelo o la muñeca",
-    descripcion: "Cinta de satín para el moño bajo o la muñeca. Lo primero que te pones a las 19:00.",
+    descripcion: "Cinta de satín para amarrar el pelo o usar en la muñeca. Combina con los dos tops de la cápsula.",
     colores: [
       { nombre: "Naranjo", hex: "#D2642A" },
       { nombre: "Olivo", hex: "#4A4A2B" },

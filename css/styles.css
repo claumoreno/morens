@@ -245,6 +245,7 @@ p { margin: 0; }
 .agenda a { text-decoration-color: var(--piedra); text-underline-offset: 4px; }
 .agenda a:hover { text-decoration-color: var(--negro); }
 .agenda--semana li .mono { width: 112px; }
+.agenda__lugar { display: block; margin-top: 4px; font-size: 11px; color: var(--texto-2); text-transform: uppercase; letter-spacing: 0.1em; width: auto !important; }
 
 /* ---------- 03 · Gusto adquirido y notas ---------- */
 .nota-card a { display: block; text-decoration: none; }
