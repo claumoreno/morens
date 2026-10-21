@@ -13,29 +13,22 @@
  *   - Wikimedia:   wiki("Nombre exacto del archivo.jpg", "Autor", "Licencia", "tono", "alt")
  *   - Unsplash:    unsplash("idDeLaFoto", "Autor", "tono", "alt")
  *   - Sin foto:    { src: "", tono: "claro", alt: "…" }  → recuadro de color
+ *   - Provisoria:  provisoria("archivo.jpg", "tono", "alt")  → ver abajo
  *  Si una foto no carga, se muestra el recuadro de color en su lugar.
+ *
+ *  FOTOS PROVISORIAS (Pinterest u otras sin permiso de uso)
+ *  Van en fotos/provisorias/ y se usan solo para ver cómo queda el sitio
+ *  privado. Cada vez que se use una, la línea lleva este comentario
+ *  y la foto se anota en fotos-provisorias.md:
+ *
+ *    // PROVISORIA - reemplazar antes de lanzar
+ *    foto: provisoria("cena-amigas.jpg", "chocolate", "Cuatro amigas cenando…"),
+ *
+ *  Antes de lanzar, buscar "PROVISORIA" en todo el proyecto: no debe quedar ninguna.
  * ============================================================
  */
 
-function wiki(archivo, autor, licencia, tono, alt) {
-  return {
-    src: `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(archivo)}?width=1200`,
-    tono,
-    alt,
-    credito: `${autor} · ${licencia} · Wikimedia Commons`,
-    fuente: `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(archivo.replace(/ /g, "_"))}`,
-  };
-}
-
-function unsplash(id, autor, tono, alt) {
-  return {
-    src: `https://unsplash.com/photos/${id}/download?w=1200`,
-    tono,
-    alt,
-    credito: `${autor} · Unsplash`,
-    fuente: `https://unsplash.com/photos/${id}`,
-  };
-}
+/* Las funciones wiki(), unsplash() y provisoria() están en js/fotos.js */
 
 const PORTADA = {
   bajada: "Para cuando cierras el computador y todavía queda la mejor parte del día.",

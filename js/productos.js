@@ -58,6 +58,9 @@ const CAPSULAS = [
  *         en "src", ej. "img/productos/ximena-frontal.jpg".
  *  tono: color del recuadro mientras no hay foto
  *        (negro, piedra, claro, naranjo, olivo, chocolate).
+ *  Foto provisoria (Pinterest): ver js/fotos.js y fotos-provisorias.md.
+ *        // PROVISORIA - reemplazar antes de lanzar
+ *        provisoria("ximena-espalda.jpg", "claro", "Top Ximena de espaldas"),
  * ============================================================
  */
 const PRODUCTOS = [

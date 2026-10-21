@@ -1,6 +1,11 @@
 # MORENS · página web
 
-Página estática (HTML, CSS y JavaScript, sin instalar nada) publicada con GitHub Pages en https://claumoreno.github.io/morens/
+Página estática (HTML, CSS y JavaScript, sin instalar nada ni paso de build), publicada de forma **privada en Vercel** con Vercel Authentication en todas las publicaciones.
+
+- `vercel.json`: agrega el encabezado `X-Robots-Tag: noindex, nofollow` a todo el sitio.
+- `robots.txt`: pide a los buscadores no entrar.
+- Cada página tiene `<meta name="robots" content="noindex, nofollow">`.
+- `.vercelignore`: deja fuera de la publicación los archivos internos (este README y `fotos-provisorias.md`).
 
 ## Páginas
 
@@ -41,6 +46,10 @@ Para fotos de terceros, `js/contenido.js` tiene dos ayudas que además agregan e
 `wiki("Archivo.jpg", "Autor", "Licencia", "tono", "alt")` para Wikimedia Commons y
 `unsplash("id", "Autor", "tono", "alt")` para Unsplash. Todos los créditos aparecen al pie de la página.
 Si una foto no carga, se muestra el recuadro de color.
+
+### Fotos provisorias (Pinterest)
+
+Van en `fotos/provisorias/`, se usan con `provisoria("archivo.jpg", "tono", "alt")`, llevan el comentario `// PROVISORIA - reemplazar antes de lanzar` y se anotan en `fotos-provisorias.md`. Antes de lanzar no puede quedar ninguna.
 
 Fotos de producto: fondo de papel gris claro, flash parejo. Fotos de campaña: la ciudad, la mesa, el cerro, atardecer naranjo o flash de noche. Nunca se mezclan en el mismo espacio.
 

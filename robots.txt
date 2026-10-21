@@ -1,0 +1,3 @@
+# Sitio privado en preparación. No indexar.
+User-agent: *
+Disallow: /
